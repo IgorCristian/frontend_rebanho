@@ -1,0 +1,11 @@
+# Dependências (o dist/ compilado É versionado, para o deploy na VPS)
+node_modules/
+dev-dist/
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+
+# Sistema
+.DS_Store
