@@ -79,3 +79,119 @@ export interface Lote {
 export type Sessao =
   | { tipo: 'usuario'; usuario: Usuario }
   | { tipo: 'fazenda'; fazenda: { id: number; nome: string }; funcionarios: FuncionarioResumo[] };
+
+// ---------- Rebanho (fase 3) ----------
+
+export const CATEGORIAS: Record<string, string> = {
+  BZF: 'Bezerra', BZM: 'Bezerro', REC: 'Recria', NVA: 'Novilha apta', NVP: 'Novilha prenhe',
+  PRE: 'Pré-parto', RPA: 'Recém-parida', LAC: 'Lactação', SEC: 'Seca', GAR: 'Garrote', TOR: 'Touro', BAI: 'Baixado',
+};
+export const CATEGORIAS_POR_SEXO: Record<'F' | 'M', string[]> = {
+  F: ['BZF', 'REC', 'NVA', 'NVP', 'PRE', 'RPA', 'LAC', 'SEC'],
+  M: ['BZM', 'GAR', 'TOR'],
+};
+
+export type Prioridade = 'alta' | 'media' | 'baixa';
+
+export interface AlertaResumo { codigo: string; titulo: string; prioridade: Prioridade }
+export interface Alerta extends AlertaResumo { mensagem: string; resolve_com: string | null }
+export interface AlertaDoDia extends Alerta { animal: { id: number; brinco: string; nome: string | null; categoria: string } }
+
+export interface Animal {
+  id: number;
+  brinco: string;
+  nome: string | null;
+  sexo: 'F' | 'M';
+  raca: string | null;
+  grau_sangue: string | null;
+  data_nascimento: string | null;
+  nascimento_estimado: boolean;
+  origem: 'nascido' | 'comprado';
+  mae: { id: number; brinco: string; nome: string | null } | null;
+  pai_semen: string | null;
+  peso_nascer: number | null;
+  observacoes: string | null;
+}
+
+export interface AnimalResumo extends Animal {
+  categoria: string | null;
+  categoria_nome: string | null;
+  status: 'ativo' | 'baixado';
+  idade_meses: number | null;
+  del: number | null;
+  lote: { id: number; nome: string } | null;
+  situacao_reprodutiva: string | null;
+  alertas: AlertaResumo[];
+}
+
+// Campos calculados pelo motor (backend_rebanho/motor/estado.py)
+export interface EstadoAnimal {
+  categoria: string | null;
+  categoria_nome: string | null;
+  status: 'ativo' | 'baixado';
+  data_baixa: string | null;
+  motivo_baixa: string | null;
+  lote: { id: number; nome: string } | null;
+  idade_dias: number | null;
+  idade_meses: number | null;
+  ultimo_peso: number | null;
+  data_ultimo_peso: string | null;
+  gmd: number | null;
+  pct_peso_adulto: number | null;
+  colostrado: boolean | null;
+  criterios_aptidao_atingidos: boolean;
+  prazo_aptidao: string | null;
+  adiamentos_aptidao: number;
+  dias_atraso_aptidao: number;
+  apta_reproducao: boolean;
+  situacao_reprodutiva: string | null;
+  ias_no_ciclo: number;
+  data_ultima_ia: string | null;
+  touro_ultima_ia: string | null;
+  data_ultimo_cio: string | null;
+  data_concepcao: string | null;
+  diagnosticos_na_gestacao: number;
+  parto_previsto: string | null;
+  pre_parto_previsto: string | null;
+  secagem_prevista: string | null;
+  dias_em_aberto: number | null;
+  ordem_lactacao: number;
+  data_ultimo_parto: string | null;
+  data_primeiro_parto: string | null;
+  data_secagem: string | null;
+  del_: number | null;
+  fase_lactacao: string | null;
+  media_litros_dia: number | null;
+  producao_acumulada: number | null;
+  producao_305: number | null;
+  iep_ultimo: number | null;
+  idade_primeiro_parto_meses: number | null;
+  data_ultimo_controle: string | null;
+  em_carencia: boolean;
+  carencia_ate: string | null;
+  ultimo_escore: number | null;
+  casos_mastite_lactacao: number;
+  marcado_descarte: boolean;
+  candidata_descarte: boolean;
+  motivos_descarte: string[];
+  avisos: { evento_id: number; data: string; tipo: string; aviso: string; ignorado: boolean }[];
+}
+
+export interface Evento {
+  id: number;
+  tipo: string;
+  tipo_nome: string;
+  data: string;
+  dados: Record<string, any>;
+  observacao: string | null;
+  lancado_por: { tipo: 'usuario' | 'funcionario'; nome: string } | null;
+  pode_excluir: boolean;
+}
+
+export interface FichaAnimal {
+  animal: Animal;
+  estado: EstadoAnimal;
+  alertas: Alerta[];
+  eventos: Evento[];
+  crias: { id: number; brinco: string; nome: string | null; sexo: 'F' | 'M' }[];
+}

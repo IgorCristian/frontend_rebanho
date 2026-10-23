@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ClipboardList, SlidersHorizontal, Users, Layers, KeyRound, MapPin } from 'lucide-react';
+import { ArrowLeft, ClipboardList, SlidersHorizontal, Users, Layers, KeyRound, MapPin, Beef, BellRing } from 'lucide-react';
 import { api } from '../services/api';
 import { Fazenda, Usuario } from '../types';
 import { Carregando, Selo } from './ui';
@@ -9,8 +9,9 @@ import { ParametrosPanel } from './ParametrosPanel';
 import { EquipePanel } from './EquipePanel';
 import { LotesPanel } from './LotesPanel';
 import { AcessoPanel } from './AcessoPanel';
+import { RebanhoArea } from './RebanhoArea';
 
-type Aba = 'dados' | 'parametros' | 'equipe' | 'lotes' | 'acesso';
+type Aba = 'rebanho' | 'alertas' | 'dados' | 'parametros' | 'equipe' | 'lotes' | 'acesso';
 
 interface FazendaDetalheProps {
   fazendaId: number;
@@ -20,7 +21,7 @@ interface FazendaDetalheProps {
 
 export const FazendaDetalhe: React.FC<FazendaDetalheProps> = ({ fazendaId, usuario, aoVoltar }) => {
   const [fazenda, setFazenda] = useState<Fazenda | null>(null);
-  const [aba, setAba] = useState<Aba>('dados');
+  const [aba, setAba] = useState<Aba>('rebanho');
 
   useEffect(() => {
     api.obterFazenda(fazendaId).then(setFazenda).catch((err) => { toast.error(err.message); aoVoltar(); });
@@ -34,6 +35,8 @@ export const FazendaDetalhe: React.FC<FazendaDetalheProps> = ({ fazendaId, usuar
   const editaParametros = gerencia || usuario.papel === 'veterinario';
 
   const abas: { id: Aba; rotulo: string; icone: React.ReactNode; visivel: boolean }[] = [
+    { id: 'rebanho', rotulo: 'Rebanho', icone: <Beef size={18} />, visivel: true },
+    { id: 'alertas', rotulo: 'Alertas', icone: <BellRing size={18} />, visivel: true },
     { id: 'dados', rotulo: 'Dados', icone: <ClipboardList size={18} />, visivel: true },
     { id: 'parametros', rotulo: 'Parâmetros', icone: <SlidersHorizontal size={18} />, visivel: true },
     { id: 'equipe', rotulo: 'Equipe', icone: <Users size={18} />, visivel: true },
@@ -67,6 +70,7 @@ export const FazendaDetalhe: React.FC<FazendaDetalheProps> = ({ fazendaId, usuar
         ))}
       </nav>
 
+      {(aba === 'rebanho' || aba === 'alertas') && <RebanhoArea fazendaId={fazenda.id} visao={aba} ehGestor={gerencia} />}
       {aba === 'dados' && <FazendaDadosPanel fazenda={fazenda} podeEditar={gerencia} aoSalvar={setFazenda} />}
       {aba === 'parametros' && <ParametrosPanel fazenda={fazenda} podeEditar={editaParametros} aoMudarRaca={(raca) => setFazenda({ ...fazenda, raca_predominante: raca })} />}
       {aba === 'equipe' && <EquipePanel fazendaId={fazenda.id} podeEditar={gerencia} />}

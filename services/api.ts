@@ -1,4 +1,4 @@
-import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel } from '../types';
+import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel, AnimalResumo, AlertaDoDia, FichaAnimal, Evento } from '../types';
 
 export const API_URL = (import.meta as any).env.VITE_API_URL;
 
@@ -125,4 +125,19 @@ export const api = {
     request<Lote>(`/fazendas/${id}/lotes`, { method: 'POST', body: dados }),
   editarLote: (id: number, loteId: number, dados: Partial<Lote>) =>
     request<Lote>(`/fazendas/${id}/lotes/${loteId}`, { method: 'PUT', body: dados }),
+
+  // --- Rebanho (fase 3) ---
+  listarAnimais: (id: number, status: 'ativo' | 'baixado' | 'todos' = 'ativo') =>
+    request<AnimalResumo[]>(`/fazendas/${id}/animais?status=${status}`),
+  alertasDoDia: (id: number) => request<AlertaDoDia[]>(`/fazendas/${id}/alertas`),
+  tiposEvento: (id: number) => request<{ perfil: string | null; tipos: string[] }>(`/fazendas/${id}/tipos-evento`),
+  obterAnimal: (id: number, animalId: number) => request<FichaAnimal>(`/fazendas/${id}/animais/${animalId}`),
+  criarAnimal: (id: number, dados: Record<string, any>) =>
+    request<FichaAnimal>(`/fazendas/${id}/animais`, { method: 'POST', body: dados }),
+  excluirAnimal: (id: number, animalId: number) =>
+    request(`/fazendas/${id}/animais/${animalId}`, { method: 'DELETE' }),
+  lancarEvento: (id: number, animalId: number, evento: { tipo: string; data: string; dados: Record<string, any>; observacao?: string; funcionario_id?: number }) =>
+    request<{ evento: Evento; avisos: string[]; ficha: FichaAnimal }>(`/fazendas/${id}/animais/${animalId}/eventos`, { method: 'POST', body: evento }),
+  excluirEvento: (id: number, eventoId: number) =>
+    request<FichaAnimal>(`/fazendas/${id}/eventos/${eventoId}`, { method: 'DELETE' }),
 };

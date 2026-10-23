@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { LogOut, UserCircle2, Check, Construction } from 'lucide-react';
+import { LogOut, UserCircle2, Check, Beef, BellRing } from 'lucide-react';
 import { FuncionarioResumo } from '../types';
 import { Cartao, Vazio } from './ui';
+import { RebanhoArea } from './RebanhoArea';
 
 const CHAVE_FUNCIONARIO = 'rebanho_funcionario_id';
 
@@ -12,13 +13,14 @@ interface FuncionarioHomeProps {
 }
 
 // Tela do acesso simplificado (código + PIN). O funcionário escolhe o próprio nome;
-// esse nome vai junto em cada evento que ele lançar (fase 3).
+// esse nome vai junto em cada evento que ele lançar.
 export const FuncionarioHome: React.FC<FuncionarioHomeProps> = ({ fazenda, funcionarios, aoSair }) => {
   const [selecionadoId, setSelecionadoId] = useState<number | null>(() => {
     const salvo = Number(localStorage.getItem(CHAVE_FUNCIONARIO));
     return funcionarios.some(f => f.id === salvo) ? salvo : null;
   });
   const selecionado = funcionarios.find(f => f.id === selecionadoId);
+  const [visao, setVisao] = useState<'alertas' | 'rebanho'>('alertas');
 
   const escolher = (id: number | null) => {
     setSelecionadoId(id);
@@ -79,13 +81,15 @@ export const FuncionarioHome: React.FC<FuncionarioHomeProps> = ({ fazenda, funci
               </div>
               <button onClick={() => escolher(null)} className="text-sm font-semibold text-gray-500 hover:text-gray-900">Trocar</button>
             </Cartao>
-            <Cartao>
-              <Vazio
-                icone={<Construction />}
-                titulo="Lançamentos em breve"
-                texto="Na próxima etapa você vai lançar aqui pesagens, partos, controle leiteiro e os outros eventos do dia."
-              />
-            </Cartao>
+            <div className="grid grid-cols-2 gap-1 bg-white border border-gray-200 p-1 rounded-xl">
+              {([['alertas', 'Alertas do dia', BellRing], ['rebanho', 'Rebanho', Beef]] as const).map(([v, rotulo, Icone]) => (
+                <button key={v} onClick={() => setVisao(v)}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition ${visao === v ? 'bg-[#050D21] text-white' : 'text-gray-500'}`}>
+                  <Icone size={16} /> {rotulo}
+                </button>
+              ))}
+            </div>
+            <RebanhoArea fazendaId={fazenda.id} visao={visao} ehGestor={false} funcionarioId={selecionado.id} />
           </>
         )}
       </main>
