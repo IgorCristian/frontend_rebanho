@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background-color: #050D21 !important;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* O app cobre o azul com o cinza claro, exceto no topo (como no AleEdu) */
+#root {
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+/* Evita o zoom automático do celular ao tocar num campo */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
