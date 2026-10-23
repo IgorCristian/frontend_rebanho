@@ -37,7 +37,7 @@ export const diasAte = (iso?: string | null) => {
 export const SITUACAO_REPRODUTIVA: Record<string, string> = {
   nao_coberta: 'Não coberta',
   aguardando_diagnostico: 'Aguardando diagnóstico',
-  prenhe: 'Prenhe',
+  prenhe: 'Prenha',
   vazia: 'Vazia',
 };
 
@@ -62,7 +62,7 @@ export const resumoDados = (tipo: string, dados: Record<string, any>) => {
   const add = (texto?: string | false | null) => texto && partes.push(texto);
   add(dados.categoria && `Categoria ${dados.categoria}`);
   add(dados.peso != null && `${numero(dados.peso, 1)} kg`);
-  add(dados.positivo === true && (tipo === 'reconfirmacao' ? 'Continua prenhe' : 'Prenhe'));
+  add(dados.positivo === true && (tipo === 'reconfirmacao' ? 'Continua prenha' : 'Prenha'));
   add(dados.positivo === false && (tipo === 'reconfirmacao' ? 'Perdeu' : 'Vazia'));
   add(dados.aprovada === true && 'Aprovada');
   add(dados.aprovada === false && `Reprovada: +${dados.dias_adicionais} dias`);

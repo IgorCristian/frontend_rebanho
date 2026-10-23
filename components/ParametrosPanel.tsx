@@ -167,7 +167,7 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
       ))}
 
       {podeEditar && alterados.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-safe">
+        <div className="fixed left-0 right-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0 lg:left-72 z-30 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <span className="text-sm text-gray-600">{alterados.length} parâmetro(s) alterado(s)</span>
             <div className="flex gap-2">

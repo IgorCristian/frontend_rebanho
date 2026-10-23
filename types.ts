@@ -1,14 +1,14 @@
-export type Papel = 'admin' | 'consultor' | 'produtor' | 'veterinario' | 'inseminador';
+export type Papel = 'admin' | 'consultor' | 'veterinario' | 'inseminador';
 
 export const PAPEIS_LABEL: Record<Papel, string> = {
   admin: 'Administrador',
   consultor: 'Consultor',
-  produtor: 'Produtor',
-  veterinario: 'Veterinário',
+  veterinario: 'Veterinário / Produtor',
   inseminador: 'Inseminador',
 };
 
-export const PAPEIS_VINCULADOS: Papel[] = ['produtor', 'veterinario', 'inseminador'];
+// O produtor usa o mesmo acesso do veterinário (decisão do PROJETO.md)
+export const PAPEIS_VINCULADOS: Papel[] = ['veterinario', 'inseminador'];
 
 export const RACAS = ['Holandesa', 'Girolando', 'Jersey', 'Gir'];
 
@@ -83,7 +83,7 @@ export type Sessao =
 // ---------- Rebanho (fase 3) ----------
 
 export const CATEGORIAS: Record<string, string> = {
-  BZF: 'Bezerra', BZM: 'Bezerro', REC: 'Recria', NVA: 'Novilha apta', NVP: 'Novilha prenhe',
+  BZF: 'Bezerra', BZM: 'Bezerro', REC: 'Recria', NVA: 'Novilha apta', NVP: 'Novilha prenha',
   PRE: 'Pré-parto', RPA: 'Recém-parida', LAC: 'Lactação', SEC: 'Seca', GAR: 'Garrote', TOR: 'Touro', BAI: 'Baixado',
 };
 export const CATEGORIAS_POR_SEXO: Record<'F' | 'M', string[]> = {

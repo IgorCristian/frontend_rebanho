@@ -161,7 +161,7 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
             </div>
           )}
           {mostraPrenhe && (
-            <Campo rotulo="Está prenhe?">
+            <Campo rotulo="Está prenha?">
               <Selecao value={f.prenhe} onChange={set('prenhe')}>
                 <option value="">Não sei / não diagnosticada</option>
                 <option value="sim">Sim</option>

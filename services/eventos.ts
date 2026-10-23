@@ -68,14 +68,14 @@ export const EVENTOS: Record<string, ConfigEvento> = {
   diagnostico: {
     nome: 'Diagnóstico de prenhez', grupo: 'Reprodução', categorias: ['NVA', 'RPA', 'LAC'],
     campos: [
-      { chave: 'positivo', rotulo: 'Resultado', tipo: 'simnao', obrigatorio: true, rotulosSimNao: ['Prenhe', 'Vazia'] },
+      { chave: 'positivo', rotulo: 'Resultado', tipo: 'simnao', obrigatorio: true, rotulosSimNao: ['Prenha', 'Vazia'] },
       { chave: 'metodo', rotulo: 'Método', tipo: 'opcoes', opcoes: ['Ultrassom', 'Toque'] },
       { chave: 'dias_gestacao', rotulo: 'Dias de gestação estimados', tipo: 'numero', unidade: 'dias', mostrarSe: d => d.positivo === true },
     ],
   },
   reconfirmacao: {
     nome: 'Reconfirmação de prenhez', grupo: 'Reprodução', categorias: ['NVP', 'PRE', 'LAC', 'SEC'],
-    campos: [{ chave: 'positivo', rotulo: 'Resultado', tipo: 'simnao', obrigatorio: true, rotulosSimNao: ['Continua prenhe', 'Perdeu'] }],
+    campos: [{ chave: 'positivo', rotulo: 'Resultado', tipo: 'simnao', obrigatorio: true, rotulosSimNao: ['Continua prenha', 'Perdeu'] }],
   },
   aborto: {
     nome: 'Aborto / perda embrionária', grupo: 'Reprodução', categorias: ['NVP', 'PRE', 'LAC', 'SEC'],

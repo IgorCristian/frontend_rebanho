@@ -7,7 +7,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { AppHeader } from './components/AppHeader';
 import { FazendasList } from './components/FazendasList';
 import { ConsultoresPanel } from './components/ConsultoresPanel';
-import { FazendaDetalhe } from './components/FazendaDetalhe';
+import { FazendaArea } from './components/FazendaArea';
 import { FuncionarioHome } from './components/FuncionarioHome';
 import { ReloadPrompt } from './components/ReloadPrompt';
 
@@ -52,6 +52,9 @@ const App: React.FC = () => {
     conteudo = <LoginScreen aoEntrar={entrar} />;
   } else if (sessao.tipo === 'fazenda') {
     conteudo = <FuncionarioHome fazenda={sessao.fazenda} funcionarios={sessao.funcionarios} aoSair={sair} />;
+  } else if (tela.nome === 'fazenda') {
+    conteudo = <FazendaArea key={tela.fazendaId} fazendaId={tela.fazendaId} usuario={sessao.usuario}
+      aoTrocarFazenda={() => setTela({ nome: 'fazendas' })} aoSair={sair} />;
   } else {
     const usuario = sessao.usuario;
     const ehAdmin = usuario.papel === 'admin';
@@ -59,7 +62,7 @@ const App: React.FC = () => {
       <div className="min-h-screen pb-10">
         <AppHeader usuario={usuario} aoSair={sair} aoClicarLogo={() => setTela({ nome: 'fazendas' })} />
 
-        {ehAdmin && tela.nome !== 'fazenda' && (
+        {ehAdmin && (
           <nav className="bg-white border-b border-gray-200">
             <div className="max-w-5xl mx-auto px-4 flex gap-6">
               {([['fazendas', 'Fazendas', Tractor], ['consultores', 'Consultores', UserCog]] as const).map(([nome, rotulo, Icone]) => (
@@ -73,9 +76,7 @@ const App: React.FC = () => {
         )}
 
         <main className="max-w-5xl mx-auto px-4 py-6">
-          {tela.nome === 'fazenda' ? (
-            <FazendaDetalhe fazendaId={tela.fazendaId} usuario={usuario} aoVoltar={() => setTela({ nome: 'fazendas' })} />
-          ) : tela.nome === 'consultores' && ehAdmin ? (
+          {tela.nome === 'consultores' && ehAdmin ? (
             <ConsultoresPanel />
           ) : (
             <FazendasList usuario={usuario} aoAbrir={(f: Fazenda) => setTela({ nome: 'fazenda', fazendaId: f.id })} />

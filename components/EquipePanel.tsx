@@ -102,12 +102,12 @@ const FuncionariosSecao: React.FC<Props> = ({ fazendaId, podeEditar }) => {
   );
 };
 
-// ---------- Usuários com login próprio (produtor, veterinário, inseminador) ----------
+// ---------- Usuários com login próprio (veterinário/produtor, inseminador) ----------
 
 const UsuariosSecao: React.FC<{ fazendaId: number }> = ({ fazendaId }) => {
   const [lista, setLista] = useState<Usuario[] | null>(null);
   const [aberto, setAberto] = useState(false);
-  const vazio = { email: '', nome: '', papel: 'produtor' as Papel, senha: '', telefone: '' };
+  const vazio = { email: '', nome: '', papel: 'veterinario' as Papel, senha: '', telefone: '' };
   const [dados, setDados] = useState(vazio);
   const [salvando, setSalvando] = useState(false);
 
@@ -144,7 +144,7 @@ const UsuariosSecao: React.FC<{ fazendaId: number }> = ({ fazendaId }) => {
     <section>
       <TituloSecao
         titulo="Usuários com login"
-        descricao="Produtor, veterinário e inseminador entram com e-mail e senha e só veem as fazendas em que foram incluídos."
+        descricao="Veterinário/produtor e inseminador entram com e-mail e senha e só veem as fazendas em que foram incluídos."
         acao={<Botao icone={<UserPlus size={18} />} onClick={() => setAberto(true)}>Incluir</Botao>}
       />
       {lista === null ? <Carregando /> : lista.length === 0 ? (

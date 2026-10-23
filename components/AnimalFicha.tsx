@@ -69,7 +69,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
   return (
     <div className="space-y-4 pb-20">
       <button onClick={aoVoltar} className="flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-900">
-        <ArrowLeft size={18} /> Rebanho
+        <ArrowLeft size={18} /> Voltar
       </button>
 
       {/* Cabeçalho */}
@@ -216,8 +216,8 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
       {/* Botão de lançar fixo no rodapé (uso no curral, com o polegar) */}
       {podeLancar && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur border-t border-gray-200 pb-safe">
-          <div className="max-w-5xl mx-auto px-4 py-3">
+        <div className="fixed left-0 right-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0 lg:left-72 z-30 bg-white/90 backdrop-blur border-t border-gray-200">
+          <div className="max-w-4xl mx-auto px-4 py-3">
             <Botao className="w-full py-3 text-base" icone={<Plus size={20} />} onClick={() => setLancando({ tipo: null })}>Lançar evento</Botao>
           </div>
         </div>
