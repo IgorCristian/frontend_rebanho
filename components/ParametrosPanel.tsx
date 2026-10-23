@@ -66,7 +66,14 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
     for (const [codigo, texto] of alterados) {
       const p = parametros.find(x => x.codigo === codigo)!;
       if (!texto.trim()) return toast.error(`${codigo}: informe um valor.`);
-      if (p.tipo === 'numero' && isNaN(Number(texto.replace(',', '.')))) return toast.error(`${codigo}: valor numérico inválido.`);
+      if (p.tipo === 'numero') {
+        const numero = Number(texto.replace(',', '.'));
+        if (isNaN(numero)) return toast.error(`${codigo}: valor numérico inválido.`);
+        if (p.inteiro && !Number.isInteger(numero)) return toast.error(`${codigo}: use um número inteiro.`);
+        if ((p.minimo != null && numero < p.minimo) || (p.maximo != null && numero > p.maximo)) {
+          return toast.error(`${codigo}: use um valor entre ${p.minimo} e ${p.maximo}.`);
+        }
+      }
       valores[codigo] = paraApi(p, texto.trim());
     }
     salvar(valores);
@@ -130,6 +137,7 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       Referência: {p.faixa} · Padrão: {paraTela(p, p.padrao)} {p.tipo === 'numero' ? p.unidade : ''}
+                      {p.minimo != null && p.maximo != null && ` · Aceita de ${p.minimo} a ${p.maximo}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 sm:w-56">
@@ -140,7 +148,7 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
                       </select>
                     ) : (
                       <div className="flex-1 flex items-center border border-gray-200 rounded-lg bg-white focus-within:border-[#56E39F] has-[:disabled]:bg-gray-50">
-                        <input disabled={bloqueado} value={texto} inputMode={p.tipo === 'numero' ? 'decimal' : 'text'}
+                        <input disabled={bloqueado} value={texto} inputMode={p.tipo === 'texto' ? 'text' : p.inteiro ? 'numeric' : 'decimal'}
                           onChange={e => setEdicoes({ ...edicoes, [p.codigo]: e.target.value })}
                           className="w-full min-w-0 px-3 py-2 bg-transparent rounded-lg text-right focus:outline-none disabled:text-gray-500" />
                         {p.tipo === 'numero' && <span className="pr-3 text-xs text-gray-400 whitespace-nowrap">{p.unidade}</span>}

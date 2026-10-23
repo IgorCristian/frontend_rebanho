@@ -61,6 +61,9 @@ export interface Parametro {
   faixa: string;
   tipo: 'numero' | 'texto';
   opcoes?: string[] | null;
+  minimo?: number | null;
+  maximo?: number | null;
+  inteiro?: boolean;
   ajustavel: boolean;
   alterado: boolean;
 }
