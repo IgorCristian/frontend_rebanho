@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, AlertTriangle, Trash2, History, Baby } from 'lucide-react';
 import { api } from '../services/api';
-import { CATEGORIAS, FichaAnimal, Lote } from '../types';
+import { CATEGORIAS, FichaAnimal, Lote, ManejoSanitario } from '../types';
 import { data, numero, idade, diasAte, SITUACAO_REPRODUTIVA, FASE_LACTACAO, COR_PRIORIDADE, resumoDados } from '../services/formato';
 import { EVENTOS, eventoSeAplica } from '../services/eventos';
 import { Botao, Cartao, Selo, Carregando } from './ui';
@@ -11,6 +11,7 @@ import { LancarEventoJanela } from './LancarEventoJanela';
 export interface ApoioLancamento {
   tipos: string[];          // tipos de evento que quem está logado pode lançar
   lotes: Lote[];
+  calendario: ManejoSanitario[];  // itens do calendário sanitário (vacinação/vermifugação)
   funcionarioId?: number;   // acesso da fazenda
   ehGestor: boolean;
 }
@@ -25,7 +26,7 @@ interface Props {
 
 export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVoltar, aoAbrirAnimal }) => {
   const [ficha, setFicha] = useState<FichaAnimal | null>(null);
-  const [lancando, setLancando] = useState<{ tipo: string | null } | null>(null);
+  const [lancando, setLancando] = useState<{ tipo: string | null; dados?: Record<string, any> } | null>(null);
 
   useEffect(() => {
     setFicha(null);
@@ -95,15 +96,15 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
       {/* Alertas */}
       {alertas.length > 0 && (
         <div className="space-y-2">
-          {alertas.map(a => (
-            <div key={a.codigo} className={`rounded-xl border p-3 flex items-start gap-3 ${COR_PRIORIDADE[a.prioridade]}`}>
+          {alertas.map((a, i) => (
+            <div key={`${a.codigo}-${i}`} className={`rounded-xl border p-3 flex items-start gap-3 ${COR_PRIORIDADE[a.prioridade]}`}>
               <AlertTriangle size={18} className="shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">{a.titulo}</p>
                 <p className="text-xs opacity-90 mt-0.5">{a.mensagem}</p>
               </div>
               {a.resolve_com && apoio.tipos.includes(a.resolve_com) && eventoSeAplica(a.resolve_com, e.categoria) && (
-                <button onClick={() => setLancando({ tipo: a.resolve_com })} className="shrink-0 text-xs font-bold underline underline-offset-2">
+                <button onClick={() => setLancando({ tipo: a.resolve_com, dados: a.contexto })} className="shrink-0 text-xs font-bold underline underline-offset-2">
                   Lançar {EVENTOS[a.resolve_com]?.nome.toLowerCase()}
                 </button>
               )}
@@ -152,12 +153,15 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
           {e.adiamentos_aptidao > 0 && <Info rotulo="Aptidão adiada" valor={`${e.adiamentos_aptidao}x · ${e.dias_atraso_aptidao} dias de atraso`} />}
         </Bloco>
 
-        {(ehFemea && e.ordem_lactacao > 0 || e.ultimo_escore != null || e.carencia_ate) && (
+        {(ehFemea && e.ordem_lactacao > 0 || e.ultimo_escore != null || e.carencia_ate || Object.keys(e.ultimas_aplicacoes).length > 0) && (
           <Bloco titulo="Saúde">
             {e.carencia_ate && <Info rotulo="Carência do leite" valor={`${e.em_carencia ? 'até' : 'terminou em'} ${data(e.carencia_ate)}`} />}
             {e.ultimo_escore != null && <Info rotulo="Escore corporal" valor={numero(e.ultimo_escore, 1)} />}
             {e.ordem_lactacao > 0 && <Info rotulo="Mastite na lactação" valor={`${e.casos_mastite_lactacao} caso(s)`} />}
             {e.candidata_descarte && <Info rotulo="Candidata a descarte" valor={e.motivos_descarte.join('; ')} />}
+            {Object.entries(e.ultimas_aplicacoes).map(([id, quando]) => (
+              <Info key={id} rotulo={apoio.calendario.find(m => m.id === Number(id))?.nome || 'Vacina'} valor={`aplicada em ${data(quando)}`} />
+            ))}
           </Bloco>
         )}
 
@@ -224,7 +228,8 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
       )}
 
       <LancarEventoJanela aberta={!!lancando} fazendaId={fazendaId} ficha={ficha} tiposPermitidos={apoio.tipos} lotes={apoio.lotes}
-        funcionarioId={apoio.funcionarioId} tipoInicial={lancando?.tipo} aoFechar={() => setLancando(null)}
+        funcionarioId={apoio.funcionarioId} tipoInicial={lancando?.tipo} dadosIniciais={lancando?.dados}
+        calendario={apoio.calendario} aoFechar={() => setLancando(null)}
         aoLancar={(nova) => { setFicha(nova); setLancando(null); }} />
     </div>
   );

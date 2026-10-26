@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { api } from '../services/api';
-import { CATEGORIAS, CATEGORIAS_POR_SEXO, FichaAnimal, Lote } from '../types';
+import { CATEGORIAS, CATEGORIAS_POR_SEXO, FichaAnimal, Lote, ManejoSanitario } from '../types';
 import { EVENTOS, GRUPOS_EVENTO, CampoEvento, eventoSeAplica } from '../services/eventos';
 import { hojeISO } from '../services/formato';
 import { Botao, Campo, Entrada, Selecao, AreaTexto, Janela } from './ui';
@@ -15,6 +15,8 @@ interface Props {
   lotes: Lote[];
   funcionarioId?: number;       // acesso da fazenda: quem está lançando
   tipoInicial?: string | null;  // ex.: aberto a partir de um alerta
+  dadosIniciais?: Record<string, any>;  // ex.: o item do calendário da vacina pendente
+  calendario: ManejoSanitario[];
   aoFechar: () => void;
   aoLancar: (ficha: FichaAnimal) => void;
 }
@@ -22,7 +24,7 @@ interface Props {
 type Cria = { brinco: string; sexo: '' | 'F' | 'M'; nome: string; peso_nascer: string; natimorto: boolean };
 const criaVazia = (): Cria => ({ brinco: '', sexo: '', nome: '', peso_nascer: '', natimorto: false });
 
-export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, tiposPermitidos, lotes, funcionarioId, tipoInicial, aoFechar, aoLancar }) => {
+export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, tiposPermitidos, lotes, funcionarioId, tipoInicial, dadosIniciais, calendario, aoFechar, aoLancar }) => {
   const [tipo, setTipo] = useState<string | null>(null);
   const [dataEvento, setDataEvento] = useState(hojeISO());
   const [dados, setDados] = useState<Record<string, any>>({});
@@ -32,16 +34,16 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
   const categoria = ficha.estado.categoria;
   const disponiveis = useMemo(() => tiposPermitidos.filter(t => EVENTOS[t] && eventoSeAplica(t, categoria)), [tiposPermitidos, categoria]);
 
-  const escolher = (t: string | null) => {
+  const escolher = (t: string | null, iniciais: Record<string, any> = {}) => {
     setTipo(t);
-    setDados(t === 'controle_leiteiro' ? { ordenhas: ['', ''] } : t === 'parto' ? { crias: [criaVazia()] } : {});
+    setDados(t === 'controle_leiteiro' ? { ordenhas: ['', ''] } : t === 'parto' ? { crias: [criaVazia()] } : { ...iniciais });
     setObservacao('');
   };
 
   useEffect(() => {
     if (aberta) {
       setDataEvento(hojeISO());
-      escolher(tipoInicial && disponiveis.includes(tipoInicial) ? tipoInicial : null);
+      escolher(tipoInicial && disponiveis.includes(tipoInicial) ? tipoInicial : null, dadosIniciais);
     }
   }, [aberta]);
 
@@ -125,6 +127,7 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
           </Campo>
           {config.campos.filter(c => !c.mostrarSe || c.mostrarSe(dados)).map(campo => (
             <CampoDinamico key={campo.chave} campo={campo} valor={dados[campo.chave]} lotes={lotes} sexo={ficha.animal.sexo}
+              calendario={calendario.filter(m => m.ativo && m.tipo_evento === tipo)}
               aoMudar={(v) => setDados({ ...dados, [campo.chave]: v })} />
           ))}
           <Campo rotulo="Observação"><AreaTexto rows={2} value={observacao} onChange={e => setObservacao(e.target.value)} /></Campo>
@@ -134,7 +137,7 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
   );
 };
 
-const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; sexo: 'F' | 'M'; aoMudar: (v: any) => void }> = ({ campo, valor, lotes, sexo, aoMudar }) => {
+const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; sexo: 'F' | 'M'; calendario: ManejoSanitario[]; aoMudar: (v: any) => void }> = ({ campo, valor, lotes, sexo, calendario, aoMudar }) => {
   const rotulo = `${campo.rotulo}${campo.obrigatorio ? ' *' : ''}`;
   switch (campo.tipo) {
     case 'numero':
@@ -176,6 +179,14 @@ const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; s
         <Campo rotulo={rotulo}>
           <Selecao value={valor ?? ''} onChange={e => aoMudar(e.target.value ? Number(e.target.value) : '')}>
             <option value="">Sem lote</option>{lotes.filter(l => l.ativo).map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+          </Selecao>
+        </Campo>
+      );
+    case 'manejo':
+      return (
+        <Campo rotulo={rotulo} dica="Ligar ao calendário faz o alerta de vacina pendente sumir.">
+          <Selecao value={valor ?? ''} onChange={e => aoMudar(e.target.value ? Number(e.target.value) : '')}>
+            <option value="">Fora do calendário</option>{calendario.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
           </Selecao>
         </Campo>
       );

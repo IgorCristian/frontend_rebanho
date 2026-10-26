@@ -24,9 +24,10 @@ export const AlertasPanel: React.FC<Props> = ({ fazendaId, aoAbrirAnimal }) => {
   const grupos = useMemo(() => {
     const mapa = new Map<string, { titulo: string; prioridade: Prioridade; itens: AlertaDoDia[] }>();
     (alertas || []).forEach(a => {
-      const g = mapa.get(a.codigo) || { titulo: a.titulo, prioridade: a.prioridade, itens: [] };
+      // Agrupa pelo título: cada vacina pendente fica no seu próprio grupo
+      const g = mapa.get(a.titulo) || { titulo: a.titulo, prioridade: a.prioridade, itens: [] };
       g.itens.push(a);
-      mapa.set(a.codigo, g);
+      mapa.set(a.titulo, g);
     });
     return [...mapa.entries()];
   }, [alertas]);
@@ -61,8 +62,8 @@ export const AlertasPanel: React.FC<Props> = ({ fazendaId, aoAbrirAnimal }) => {
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${COR_PRIORIDADE[g.prioridade]}`}>{NOME_PRIORIDADE[g.prioridade]}</span>
           </h3>
           <Cartao className="divide-y divide-gray-100">
-            {g.itens.map(a => (
-              <button key={`${codigo}-${a.animal.id}`} onClick={() => aoAbrirAnimal(a.animal.id)}
+            {g.itens.map((a, i) => (
+              <button key={`${codigo}-${a.animal.id}-${i}`} onClick={() => aoAbrirAnimal(a.animal.id)}
                 className="w-full p-3 flex items-center gap-3 text-left hover:bg-gray-50 transition">
                 <div className="w-11 h-11 shrink-0 rounded-xl bg-gray-100 text-gray-800 font-bold text-sm flex items-center justify-center">{a.animal.brinco}</div>
                 <div className="flex-1 min-w-0">

@@ -85,3 +85,27 @@ export const resumoDados = (tipo: string, dados: Record<string, any>) => {
   add(dados.valor != null && `R$ ${numero(dados.valor, 2)}`);
   return partes.join(' · ');
 };
+
+// Valor de indicador conforme a unidade (percentuais chegam como fração)
+export const valorIndicador = (valor: number | null | undefined, unidade: string) => {
+  if (valor == null) return '—';
+  switch (unidade) {
+    case '%': return `${numero(valor * 100, 1)}%`;
+    case 'dias': return `${numero(valor)} dias`;
+    case 'meses': return `${numero(valor, 1)} meses`;
+    case 'kg/dia': return `${numero(valor, 2)} kg/dia`;
+    case 'L/dia': return `${numero(valor, 1)} L/dia`;
+    case 'L': return `${numero(valor)} L`;
+    case 'IAs': return `${numero(valor, 1)} IAs`;
+    default: return numero(valor, 2);
+  }
+};
+
+export const COR_SITUACAO = {
+  bom: 'bg-green-50 text-green-700 border-green-200',
+  atencao: 'bg-amber-50 text-amber-700 border-amber-200',
+  ruim: 'bg-red-50 text-red-700 border-red-200',
+  sem_dados: 'bg-gray-100 text-gray-500 border-gray-200',
+} as const;
+
+export const NOME_SITUACAO = { bom: 'Dentro da meta', atencao: 'Perto da meta', ruim: 'Fora da meta', sem_dados: 'Sem dados' } as const;

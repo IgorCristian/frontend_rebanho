@@ -19,9 +19,9 @@ export const RebanhoArea: React.FC<Props> = ({ fazendaId, visao, ehGestor, funci
   const [animalId, setAnimalId] = useState<number | null>(null);
 
   useEffect(() => {
-    Promise.all([api.tiposEvento(fazendaId), api.listarLotes(fazendaId)])
-      .then(([tipos, lotes]) => setApoio({ tipos: tipos.tipos, lotes: lotes as Lote[], funcionarioId, ehGestor }))
-      .catch(() => setApoio({ tipos: [], lotes: [], funcionarioId, ehGestor }));
+    Promise.all([api.tiposEvento(fazendaId), api.listarLotes(fazendaId), api.listarCalendario(fazendaId)])
+      .then(([tipos, lotes, calendario]) => setApoio({ tipos: tipos.tipos, lotes: lotes as Lote[], calendario, funcionarioId, ehGestor }))
+      .catch(() => setApoio({ tipos: [], lotes: [], calendario: [], funcionarioId, ehGestor }));
   }, [fazendaId, funcionarioId, ehGestor]);
 
   // Trocar de aba volta para a lista

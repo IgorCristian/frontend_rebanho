@@ -94,7 +94,7 @@ export const CATEGORIAS_POR_SEXO: Record<'F' | 'M', string[]> = {
 export type Prioridade = 'alta' | 'media' | 'baixa';
 
 export interface AlertaResumo { codigo: string; titulo: string; prioridade: Prioridade }
-export interface Alerta extends AlertaResumo { mensagem: string; resolve_com: string | null }
+export interface Alerta extends AlertaResumo { mensagem: string; resolve_com: string | null; contexto?: Record<string, any> }
 export interface AlertaDoDia extends Alerta { animal: { id: number; brinco: string; nome: string | null; categoria: string } }
 
 export interface Animal {
@@ -171,6 +171,7 @@ export interface EstadoAnimal {
   carencia_ate: string | null;
   ultimo_escore: number | null;
   casos_mastite_lactacao: number;
+  ultimas_aplicacoes: Record<string, string>;  // {id do item do calendário: data}
   marcado_descarte: boolean;
   candidata_descarte: boolean;
   motivos_descarte: string[];
@@ -194,4 +195,64 @@ export interface FichaAnimal {
   alertas: Alerta[];
   eventos: Evento[];
   crias: { id: number; brinco: string; nome: string | null; sexo: 'F' | 'M' }[];
+}
+
+// ---------- Fase 4: calendário sanitário, indicadores e relatórios ----------
+
+export interface ManejoSanitario {
+  id: number;
+  nome: string;
+  tipo_evento: 'vacinacao' | 'vermifugacao';
+  sexo: 'F' | 'M' | null;
+  categorias: string[];
+  idade_inicio_meses: number | null;
+  usar_p29: boolean;
+  idade_max_meses: number | null;
+  intervalo_meses: number | null;
+  obrigatorio: boolean;
+  epoca: string | null;
+  reforco: string | null;
+  carencia_leite_dias: number | null;
+  carencia_carne_dias: number | null;
+  observacao: string | null;
+  ativo: boolean;
+  gera_alerta: boolean;
+}
+
+export type Sentido = 'menor' | 'maior' | 'faixa';
+
+export interface Indicador {
+  codigo: string;
+  grupo: string;
+  nome: string;
+  unidade: string;
+  sentido: Sentido;
+  como: string;
+  valor: number | null;
+  meta: number;
+  meta_padrao: number;
+  base: string;
+  situacao: 'bom' | 'atencao' | 'ruim' | 'sem_dados';
+}
+
+export interface MetaIndicador {
+  codigo: string;
+  grupo: string;
+  nome: string;
+  unidade: string;
+  sentido: Sentido;
+  como: string;
+  meta: number;
+  padrao: number;
+  alterada: boolean;
+}
+
+export interface RelatorioControleLeiteiro {
+  inicio: string;
+  fim: string;
+  media_geral: number | null;
+  linhas: { data: string; animal_id: number; brinco: string; nome: string | null;
+    ordenha_1: number | null; ordenha_2: number | null; ordenha_3: number | null; total_dia: number }[];
+  resumo_por_animal: { animal_id: number; brinco: string; nome: string | null; controles: number;
+    media_diaria: number; maior: number; menor: number }[];
 }

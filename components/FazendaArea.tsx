@@ -12,6 +12,8 @@ import { FazendaDadosPanel } from './FazendaDadosPanel';
 import { ParametrosPanel } from './ParametrosPanel';
 import { EquipePanel } from './EquipePanel';
 import { AcessoPanel } from './AcessoPanel';
+import { CalendarioPanel } from './CalendarioPanel';
+import { MetasPanel } from './MetasPanel';
 
 type Pagina = 'alertas' | 'rebanho' | 'resultados' | 'configuracoes';
 
@@ -50,6 +52,8 @@ export const FazendaArea: React.FC<Props> = ({ fazendaId, usuario, aoTrocarFazen
   const abasConfig = [
     { id: 'informacoes', rotulo: 'Informações da fazenda' },
     { id: 'parametros', rotulo: 'Parâmetros' },
+    { id: 'calendario', rotulo: 'Calendário sanitário' },
+    { id: 'metas', rotulo: 'Metas' },
     { id: 'equipe', rotulo: 'Equipe' },
     ...(gerencia ? [{ id: 'acesso', rotulo: 'Acesso' }] : []),
   ];
@@ -82,15 +86,17 @@ export const FazendaArea: React.FC<Props> = ({ fazendaId, usuario, aoTrocarFazen
         </>
       )}
 
-      {pagina === 'resultados' && <ResultadosPagina />}
+      {pagina === 'resultados' && <ResultadosPagina fazendaId={fazenda.id} />}
 
       {pagina === 'configuracoes' && (
         <>
           <TituloPagina titulo="Configurações"
-            descricao={gerencia ? undefined : editaParametros ? 'Você pode ajustar os parâmetros; o resto é só leitura.' : 'Somente leitura.'} />
+            descricao={gerencia ? undefined : editaParametros ? 'Você pode ajustar parâmetros, calendário sanitário e metas; o resto é só leitura.' : 'Somente leitura.'} />
           <Abas abas={abasConfig} ativa={abaConfig} aoMudar={setAbaConfig} />
           {abaConfig === 'informacoes' && <FazendaDadosPanel fazenda={fazenda} podeEditar={gerencia} aoSalvar={setFazenda} />}
           {abaConfig === 'parametros' && <ParametrosPanel fazenda={fazenda} podeEditar={editaParametros} aoMudarRaca={(raca) => setFazenda({ ...fazenda, raca_predominante: raca })} />}
+          {abaConfig === 'calendario' && <CalendarioPanel fazendaId={fazenda.id} podeEditar={editaParametros} />}
+          {abaConfig === 'metas' && <MetasPanel fazendaId={fazenda.id} podeEditar={editaParametros} />}
           {abaConfig === 'equipe' && <EquipePanel fazendaId={fazenda.id} podeEditar={gerencia} />}
           {abaConfig === 'acesso' && gerencia && <AcessoPanel fazenda={fazenda} aoMudar={setFazenda} />}
         </>

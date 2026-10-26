@@ -1,7 +1,7 @@
 // Formulário de cada tipo de evento (aba EVENTOS da planilha).
 // "categorias" diz para quais animais o evento aparece na lista; o backend/motor confere de novo.
 
-export type TipoCampo = 'numero' | 'texto' | 'opcoes' | 'simnao' | 'lote' | 'categoria' | 'ordenhas' | 'crias';
+export type TipoCampo = 'numero' | 'texto' | 'opcoes' | 'simnao' | 'lote' | 'categoria' | 'ordenhas' | 'crias' | 'manejo';
 
 export interface CampoEvento {
   chave: string;
@@ -128,7 +128,8 @@ export const EVENTOS: Record<string, ConfigEvento> = {
   vacinacao: {
     nome: 'Vacinação', grupo: 'Saúde', categorias: 'todas',
     campos: [
-      { chave: 'vacina', rotulo: 'Vacina', tipo: 'texto' },
+      { chave: 'manejo_id', rotulo: 'Item do calendário sanitário', tipo: 'manejo' },
+      { chave: 'vacina', rotulo: 'Vacina (se não estiver no calendário)', tipo: 'texto', mostrarSe: d => !d.manejo_id },
       { chave: 'lote_fabricante', rotulo: 'Lote / fabricante', tipo: 'texto' },
       { chave: 'dose', rotulo: 'Dose', tipo: 'texto' },
     ],
@@ -136,6 +137,7 @@ export const EVENTOS: Record<string, ConfigEvento> = {
   vermifugacao: {
     nome: 'Vermifugação / parasitas', grupo: 'Saúde', categorias: 'todas',
     campos: [
+      { chave: 'manejo_id', rotulo: 'Item do calendário sanitário', tipo: 'manejo' },
       { chave: 'produto', rotulo: 'Produto', tipo: 'texto' },
       { chave: 'dose', rotulo: 'Dose', tipo: 'texto' },
     ],

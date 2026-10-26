@@ -1,4 +1,5 @@
-import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel, AnimalResumo, AlertaDoDia, FichaAnimal, Evento } from '../types';
+import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel, AnimalResumo, AlertaDoDia, FichaAnimal, Evento,
+  ManejoSanitario, Indicador, MetaIndicador, RelatorioControleLeiteiro } from '../types';
 
 export const API_URL = (import.meta as any).env.VITE_API_URL;
 
@@ -140,4 +141,17 @@ export const api = {
     request<{ evento: Evento; avisos: string[]; ficha: FichaAnimal }>(`/fazendas/${id}/animais/${animalId}/eventos`, { method: 'POST', body: evento }),
   excluirEvento: (id: number, eventoId: number) =>
     request<FichaAnimal>(`/fazendas/${id}/eventos/${eventoId}`, { method: 'DELETE' }),
+
+  // --- Fase 4: calendário sanitário, metas, indicadores e relatórios ---
+  listarCalendario: (id: number) => request<ManejoSanitario[]>(`/fazendas/${id}/calendario`),
+  criarManejo: (id: number, dados: Partial<ManejoSanitario>) =>
+    request<ManejoSanitario>(`/fazendas/${id}/calendario`, { method: 'POST', body: dados }),
+  editarManejo: (id: number, manejoId: number, dados: Partial<ManejoSanitario>) =>
+    request<ManejoSanitario>(`/fazendas/${id}/calendario/${manejoId}`, { method: 'PUT', body: dados }),
+  listarMetas: (id: number) => request<MetaIndicador[]>(`/fazendas/${id}/metas`),
+  salvarMetas: (id: number, valores: Record<string, number | null>) =>
+    request<MetaIndicador[]>(`/fazendas/${id}/metas`, { method: 'PUT', body: { valores } }),
+  indicadores: (id: number) => request<{ data: string; indicadores: Indicador[] }>(`/fazendas/${id}/indicadores`),
+  relatorioControleLeiteiro: (id: number, inicio: string, fim: string) =>
+    request<RelatorioControleLeiteiro>(`/fazendas/${id}/relatorios/controle-leiteiro?inicio=${inicio}&fim=${fim}`),
 };
