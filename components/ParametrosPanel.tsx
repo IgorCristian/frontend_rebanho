@@ -13,8 +13,8 @@ interface Props {
 
 // Percentuais (P06) chegam como fração (0.55) e aparecem como 55 na tela
 const ehPercentual = (p: Parametro) => p.unidade === '%';
-const paraTela = (p: Parametro, valor: number | string) =>
-  ehPercentual(p) && typeof valor === 'number' ? String(Math.round(valor * 10000) / 100) : String(valor);
+const paraTela = (p: Parametro, valor: number | string | null) =>
+  valor == null ? '' : ehPercentual(p) && typeof valor === 'number' ? String(Math.round(valor * 10000) / 100) : String(valor);
 const paraApi = (p: Parametro, texto: string): number | string => {
   if (p.tipo === 'texto') return texto;
   const numero = Number(texto.replace(',', '.'));
@@ -136,7 +136,7 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
                       {p.alterado && <Selo cor="azul">Ajustado</Selo>}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      Referência: {p.faixa} · Padrão: {paraTela(p, p.padrao)} {p.tipo === 'numero' ? p.unidade : ''}
+                      Referência: {p.faixa} · Padrão: {p.padrao == null ? 'não definido' : `${paraTela(p, p.padrao)} ${p.tipo === 'numero' ? p.unidade : ''}`}
                       {p.minimo != null && p.maximo != null && ` · Aceita de ${p.minimo} a ${p.maximo}`}
                     </p>
                   </div>

@@ -149,6 +149,12 @@ const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; s
           </div>
         </Campo>
       );
+    case 'data':
+      return (
+        <Campo rotulo={rotulo} dica="Com valor informado, a venda vai para o financeiro do Gestão como pendente (vencimento padrão: a data da venda).">
+          <Entrada type="date" value={valor ?? ''} onChange={e => aoMudar(e.target.value)} />
+        </Campo>
+      );
     case 'texto':
       return <Campo rotulo={rotulo}><Entrada value={valor ?? ''} onChange={e => aoMudar(e.target.value)} /></Campo>;
     case 'opcoes':

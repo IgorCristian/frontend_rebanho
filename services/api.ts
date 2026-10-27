@@ -1,5 +1,5 @@
 import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel, AnimalResumo, AlertaDoDia, FichaAnimal, Evento,
-  ManejoSanitario, Indicador, MetaIndicador, RelatorioControleLeiteiro } from '../types';
+  ManejoSanitario, Indicador, MetaIndicador, RelatorioControleLeiteiro, ClienteGestao, IntegracaoStatus, InsumoGestao } from '../types';
 
 export const API_URL = (import.meta as any).env.VITE_API_URL;
 
@@ -154,4 +154,10 @@ export const api = {
   indicadores: (id: number) => request<{ data: string; indicadores: Indicador[] }>(`/fazendas/${id}/indicadores`),
   relatorioControleLeiteiro: (id: number, inicio: string, fim: string) =>
     request<RelatorioControleLeiteiro>(`/fazendas/${id}/relatorios/controle-leiteiro?inicio=${inicio}&fim=${fim}`),
+
+  // --- Fase 5: integração com o Gestão Fácil ---
+  clientesGestao: () => request<ClienteGestao[]>('/integracao/gestao/clientes'),
+  integracao: (id: number) => request<IntegracaoStatus>(`/fazendas/${id}/integracao`),
+  sincronizarGestao: (id: number) => request<IntegracaoStatus>(`/fazendas/${id}/integracao/sincronizar`, { method: 'POST' }),
+  insumosGestao: (id: number) => request<InsumoGestao[]>(`/fazendas/${id}/integracao/insumos`),
 };

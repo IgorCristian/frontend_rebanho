@@ -16,7 +16,6 @@ const formulario = (f: Fazenda) => ({
   proprietario: f.proprietario || '',
   cidade: f.cidade || '',
   uf: f.uf || '',
-  gestao_cliente_id: f.gestao_cliente_id ? String(f.gestao_cliente_id) : '',
   ativa: f.ativa,
 });
 
@@ -29,11 +28,10 @@ export const FazendaDadosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoSalv
 
   const salvar = async () => {
     if (!dados.nome.trim()) return toast.error('O nome da fazenda não pode ficar vazio.');
-    if (dados.gestao_cliente_id && !/^\d+$/.test(dados.gestao_cliente_id)) return toast.error('O ID do cliente no Gestão deve ser um número.');
     if (!dados.ativa && fazenda.ativa && !confirm('Desativar a fazenda? Ninguém da equipe vai conseguir acessá-la.')) return;
     setSalvando(true);
     try {
-      const salva = await api.editarFazenda(fazenda.id, { ...dados, gestao_cliente_id: dados.gestao_cliente_id ? Number(dados.gestao_cliente_id) : null });
+      const salva = await api.editarFazenda(fazenda.id, dados);
       aoSalvar(salva);
       toast.success('Dados salvos.');
     } catch (err: any) {
@@ -61,9 +59,6 @@ export const FazendaDadosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoSalv
 
       {podeEditar && (
         <>
-          <Campo rotulo="ID do cliente no Gestão Financeira" dica="Usado na integração financeira (fase 5). Deixe vazio se ainda não houver.">
-            <Entrada inputMode="numeric" value={dados.gestao_cliente_id} onChange={e => setDados({ ...dados, gestao_cliente_id: e.target.value.replace(/\D/g, '') })} />
-          </Campo>
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <input type="checkbox" className="w-5 h-5 accent-[#56E39F]" checked={dados.ativa} onChange={e => setDados({ ...dados, ativa: e.target.checked })} />
             <span className="text-sm text-gray-700">Fazenda ativa</span>

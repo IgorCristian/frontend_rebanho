@@ -22,7 +22,7 @@ const inicial = () => ({
   brinco: '', nome: '', sexo: 'F' as 'F' | 'M', raca: '', grau_sangue: '', data_nascimento: '', nascimento_estimado: false,
   origem: 'nascido' as 'nascido' | 'comprado', data_entrada: hojeISO(), categoria: '', lote_id: '', peso: '',
   ordem_lactacao: '', ultimo_parto: '', prenhe: '' as '' | 'sim' | 'nao', ultima_ia: '', dias_gestacao: '', touro: '',
-  valor: '', vendedor: '', gta: '',
+  valor: '', vendedor: '', gta: '', vencimento: '',
 });
 
 // Cadastro do animal com o evento de entrada (cadastro inicial na implantação, ou compra).
@@ -65,6 +65,7 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
       if (f.valor) dados.valor = f.valor;
       if (f.vendedor) dados.origem = f.vendedor;
       if (f.gta) dados.gta = f.gta;
+      if (f.vencimento) dados.vencimento = f.vencimento;
     }
 
     setSalvando(true);
@@ -191,6 +192,9 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
             <Campo rotulo="GTA"><Entrada value={f.gta} onChange={set('gta')} /></Campo>
           </div>
           <Campo rotulo="Vendedor / origem"><Entrada value={f.vendedor} onChange={set('vendedor')} /></Campo>
+          <Campo rotulo="Vencimento do pagamento" dica="Com valor, a compra vai para o financeiro do Gestão como pendente (padrão: a data da compra).">
+            <Entrada type="date" value={f.vencimento} onChange={set('vencimento')} />
+          </Campo>
         </div>
       )}
     </Janela>

@@ -14,6 +14,7 @@ import { EquipePanel } from './EquipePanel';
 import { AcessoPanel } from './AcessoPanel';
 import { CalendarioPanel } from './CalendarioPanel';
 import { MetasPanel } from './MetasPanel';
+import { IntegracaoPanel } from './IntegracaoPanel';
 
 type Pagina = 'alertas' | 'rebanho' | 'resultados' | 'configuracoes';
 
@@ -55,7 +56,7 @@ export const FazendaArea: React.FC<Props> = ({ fazendaId, usuario, aoTrocarFazen
     { id: 'calendario', rotulo: 'Calendário sanitário' },
     { id: 'metas', rotulo: 'Metas' },
     { id: 'equipe', rotulo: 'Equipe' },
-    ...(gerencia ? [{ id: 'acesso', rotulo: 'Acesso' }] : []),
+    ...(gerencia ? [{ id: 'acesso', rotulo: 'Acesso' }, { id: 'integracao', rotulo: 'Integração' }] : []),
   ];
 
   return (
@@ -99,6 +100,7 @@ export const FazendaArea: React.FC<Props> = ({ fazendaId, usuario, aoTrocarFazen
           {abaConfig === 'metas' && <MetasPanel fazendaId={fazenda.id} podeEditar={editaParametros} />}
           {abaConfig === 'equipe' && <EquipePanel fazendaId={fazenda.id} podeEditar={gerencia} />}
           {abaConfig === 'acesso' && gerencia && <AcessoPanel fazenda={fazenda} aoMudar={setFazenda} />}
+          {abaConfig === 'integracao' && gerencia && <IntegracaoPanel fazenda={fazenda} aoMudar={setFazenda} />}
         </>
       )}
     </AppShell>

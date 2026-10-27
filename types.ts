@@ -55,8 +55,8 @@ export interface Parametro {
   codigo: string;
   grupo: string;
   nome: string;
-  valor: number | string;
-  padrao: number | string;
+  valor: number | string | null;
+  padrao: number | string | null;
   unidade: string;
   faixa: string;
   tipo: 'numero' | 'texto';
@@ -187,6 +187,7 @@ export interface Evento {
   observacao: string | null;
   lancado_por: { tipo: 'usuario' | 'funcionario'; nome: string } | null;
   pode_excluir: boolean;
+  gestao?: { status: StatusEnvio; erro: string | null } | null;  // venda/compra enviada ao financeiro do Gestão
 }
 
 export interface FichaAnimal {
@@ -255,4 +256,33 @@ export interface RelatorioControleLeiteiro {
     ordenha_1: number | null; ordenha_2: number | null; ordenha_3: number | null; total_dia: number }[];
   resumo_por_animal: { animal_id: number; brinco: string; nome: string | null; controles: number;
     media_diaria: number; maior: number; menor: number }[];
+}
+
+// ---------- Fase 5: integração com o Gestão Fácil ----------
+
+export type StatusEnvio = 'pendente' | 'enviado' | 'removido' | 'erro' | 'cancelado';
+
+export interface ClienteGestao { id: number; nome: string }
+
+export interface IntegracaoStatus {
+  configurada: boolean;
+  gestao_cliente_id: number | null;
+  cliente: ClienteGestao | null;
+  erro_cliente: string | null;
+  resumo: Partial<Record<StatusEnvio, number>>;
+  pendencias: { evento_id: number; tipo: string; tipo_nome: string; acao: 'enviar' | 'remover'; data: string; valor: number | null;
+    animal: { id: number; brinco: string; nome: string | null }; status: StatusEnvio; erro: string | null; tentativas: number }[];
+  enviados?: number;
+  falhas?: number;
+}
+
+export interface InsumoGestao {
+  id: number;
+  nome: string;
+  unidade: string | null;
+  categoria: string | null;
+  quantidade_atual: number;
+  custo_medio: number | null;
+  ultimo_preco: number | null;
+  data_ultima_compra: string | null;
 }

@@ -201,6 +201,12 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
                 {resumoDados(ev.tipo, ev.dados) && <p className="text-xs text-gray-600 mt-0.5">{resumoDados(ev.tipo, ev.dados)}</p>}
                 {ev.observacao && <p className="text-xs text-gray-500 italic mt-0.5">{ev.observacao}</p>}
                 {ev.lancado_por && <p className="text-[11px] text-gray-400 mt-1">por {ev.lancado_por.nome}</p>}
+                {ev.gestao && (
+                  <p className={`text-[11px] mt-1 font-semibold ${ev.gestao.status === 'enviado' ? 'text-green-700' : ev.gestao.status === 'erro' ? 'text-red-600' : 'text-amber-600'}`}
+                    title={ev.gestao.erro || undefined}>
+                    {ev.gestao.status === 'enviado' ? '✓ No financeiro do Gestão' : ev.gestao.status === 'erro' ? '⚠ Erro ao enviar ao Gestão' : '… Aguardando envio ao Gestão'}
+                  </p>
+                )}
               </div>
               {ev.pode_excluir && (
                 <button onClick={() => excluirEvento(ev.id, ev.tipo_nome)} className="p-1.5 text-gray-300 hover:text-red-600 rounded-lg hover:bg-red-50" title="Excluir lançamento">

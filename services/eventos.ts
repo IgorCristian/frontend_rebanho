@@ -1,7 +1,7 @@
 // Formulário de cada tipo de evento (aba EVENTOS da planilha).
 // "categorias" diz para quais animais o evento aparece na lista; o backend/motor confere de novo.
 
-export type TipoCampo = 'numero' | 'texto' | 'opcoes' | 'simnao' | 'lote' | 'categoria' | 'ordenhas' | 'crias' | 'manejo';
+export type TipoCampo = 'numero' | 'texto' | 'opcoes' | 'simnao' | 'lote' | 'categoria' | 'ordenhas' | 'crias' | 'manejo' | 'data';
 
 export interface CampoEvento {
   chave: string;
@@ -176,6 +176,7 @@ export const EVENTOS: Record<string, ConfigEvento> = {
     campos: [
       { chave: 'comprador', rotulo: 'Comprador', tipo: 'texto' },
       { chave: 'valor', rotulo: 'Valor', tipo: 'numero', unidade: 'R$' },
+      { chave: 'vencimento', rotulo: 'Vencimento do recebimento', tipo: 'data', mostrarSe: d => !!d.valor },
       { chave: 'peso', rotulo: 'Peso', tipo: 'numero', unidade: 'kg' },
       { chave: 'motivo', rotulo: 'Motivo', tipo: 'texto' },
     ],
