@@ -30,8 +30,8 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
   useEffect(() => {
     setFicha(null);
-    api.obterAnimal(fazendaId, animalId).then(setFicha).catch((err) => { toast.error(err.message); aoVoltar(); });
-  }, [fazendaId, animalId]);
+    api.obterAnimal(fazendaId, animalId, apoio.funcionarioId).then(setFicha).catch((err) => { toast.error(err.message); aoVoltar(); });
+  }, [fazendaId, animalId, apoio.funcionarioId]);
 
   if (!ficha) return <Carregando />;
   const { animal, estado: e, alertas, eventos } = ficha;
@@ -41,7 +41,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
   const excluirEvento = async (id: number, nome: string) => {
     if (!confirm(`Excluir o lançamento "${nome}"? A categoria e os alertas serão recalculados.`)) return;
     try {
-      setFicha(await api.excluirEvento(fazendaId, id));
+      setFicha(await api.excluirEvento(fazendaId, id, apoio.funcionarioId));
       toast.success('Lançamento excluído.');
     } catch (err: any) {
       toast.error(err.message, { duration: 6000 });

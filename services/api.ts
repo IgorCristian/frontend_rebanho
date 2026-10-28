@@ -132,15 +132,17 @@ export const api = {
     request<AnimalResumo[]>(`/fazendas/${id}/animais?status=${status}`),
   alertasDoDia: (id: number) => request<AlertaDoDia[]>(`/fazendas/${id}/alertas`),
   tiposEvento: (id: number) => request<{ perfil: string | null; tipos: string[] }>(`/fazendas/${id}/tipos-evento`),
-  obterAnimal: (id: number, animalId: number) => request<FichaAnimal>(`/fazendas/${id}/animais/${animalId}`),
+  // funcionarioId (acesso da fazenda): o backend usa para saber quais lançamentos ele pode excluir
+  obterAnimal: (id: number, animalId: number, funcionarioId?: number) =>
+    request<FichaAnimal>(`/fazendas/${id}/animais/${animalId}${funcionarioId ? `?funcionario_id=${funcionarioId}` : ''}`),
   criarAnimal: (id: number, dados: Record<string, any>) =>
     request<FichaAnimal>(`/fazendas/${id}/animais`, { method: 'POST', body: dados }),
   excluirAnimal: (id: number, animalId: number) =>
     request(`/fazendas/${id}/animais/${animalId}`, { method: 'DELETE' }),
   lancarEvento: (id: number, animalId: number, evento: { tipo: string; data: string; dados: Record<string, any>; observacao?: string; funcionario_id?: number }) =>
     request<{ evento: Evento; avisos: string[]; ficha: FichaAnimal }>(`/fazendas/${id}/animais/${animalId}/eventos`, { method: 'POST', body: evento }),
-  excluirEvento: (id: number, eventoId: number) =>
-    request<FichaAnimal>(`/fazendas/${id}/eventos/${eventoId}`, { method: 'DELETE' }),
+  excluirEvento: (id: number, eventoId: number, funcionarioId?: number) =>
+    request<FichaAnimal>(`/fazendas/${id}/eventos/${eventoId}${funcionarioId ? `?funcionario_id=${funcionarioId}` : ''}`, { method: 'DELETE' }),
 
   // --- Fase 4: calendário sanitário, metas, indicadores e relatórios ---
   listarCalendario: (id: number) => request<ManejoSanitario[]>(`/fazendas/${id}/calendario`),
