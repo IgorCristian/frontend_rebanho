@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { api } from '../services/api';
-import { CATEGORIAS, CATEGORIAS_POR_SEXO, FichaAnimal, Lote, ManejoSanitario } from '../types';
+import { CATEGORIAS, CATEGORIAS_POR_SEXO, Evento, FichaAnimal, Lote, ManejoSanitario } from '../types';
 import { EVENTOS, GRUPOS_EVENTO, CampoEvento, eventoSeAplica } from '../services/eventos';
 import { hojeISO } from '../services/formato';
 import { Botao, Campo, Entrada, Selecao, AreaTexto, Janela } from './ui';
@@ -16,6 +16,7 @@ interface Props {
   funcionarioId?: number;       // acesso da fazenda: quem está lançando
   tipoInicial?: string | null;  // ex.: aberto a partir de um alerta
   dadosIniciais?: Record<string, any>;  // ex.: o item do calendário da vacina pendente
+  corrigindo?: Evento;          // botão Corrigir: abre o lançamento preenchido e salva no lugar dele
   calendario: ManejoSanitario[];
   aoFechar: () => void;
   aoLancar: (ficha: FichaAnimal) => void;
@@ -24,7 +25,7 @@ interface Props {
 type Cria = { brinco: string; sexo: '' | 'F' | 'M'; nome: string; peso_nascer: string; natimorto: boolean };
 const criaVazia = (): Cria => ({ brinco: '', sexo: '', nome: '', peso_nascer: '', natimorto: false });
 
-export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, tiposPermitidos, lotes, funcionarioId, tipoInicial, dadosIniciais, calendario, aoFechar, aoLancar }) => {
+export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, tiposPermitidos, lotes, funcionarioId, tipoInicial, dadosIniciais, corrigindo, calendario, aoFechar, aoLancar }) => {
   const [tipo, setTipo] = useState<string | null>(null);
   const [dataEvento, setDataEvento] = useState(hojeISO());
   const [dados, setDados] = useState<Record<string, any>>({});
@@ -41,10 +42,16 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
   };
 
   useEffect(() => {
-    if (aberta) {
-      setDataEvento(hojeISO());
-      escolher(tipoInicial && disponiveis.includes(tipoInicial) ? tipoInicial : null, dadosIniciais);
+    if (!aberta) return;
+    if (corrigindo) {
+      setTipo(corrigindo.tipo);
+      setDataEvento(corrigindo.data);
+      setDados(dadosParaCorrigir(corrigindo));
+      setObservacao(corrigindo.observacao || '');
+      return;
     }
+    setDataEvento(hojeISO());
+    escolher(tipoInicial && disponiveis.includes(tipoInicial) ? tipoInicial : null, dadosIniciais);
   }, [aberta]);
 
   const config = tipo ? EVENTOS[tipo] : null;
@@ -74,10 +81,11 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
 
     setSalvando(true);
     try {
-      const resp = await api.lancarEvento(fazendaId, ficha.animal.id, {
-        tipo, data: dataEvento, dados: enviar, observacao, ...(funcionarioId ? { funcionario_id: funcionarioId } : {}),
-      });
-      toast.success(`${config.nome} lançado(a).`);
+      const corpo = { data: dataEvento, dados: enviar, observacao, ...(funcionarioId ? { funcionario_id: funcionarioId } : {}) };
+      const resp = corrigindo
+        ? await api.corrigirEvento(fazendaId, corrigindo.id, corpo)
+        : await api.lancarEvento(fazendaId, ficha.animal.id, { tipo, ...corpo });
+      toast.success(corrigindo ? `${config.nome} corrigido(a).` : `${config.nome} lançado(a).`);
       resp.avisos.forEach(aviso => toast(aviso, { icon: '⚠️', duration: 6000 }));
       aoLancar(resp.ficha);
     } catch (err: any) {
@@ -87,13 +95,15 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
     }
   };
 
-  const titulo = config ? config.nome : `Lançar para ${ficha.animal.nome || `brinco ${ficha.animal.brinco}`}`;
+  const titulo = config ? `${corrigindo ? 'Corrigir: ' : ''}${config.nome}` : `Lançar para ${ficha.animal.nome || `brinco ${ficha.animal.brinco}`}`;
 
   return (
     <Janela titulo={titulo} aberta={aberta} aoFechar={aoFechar} rodape={config ? (
       <>
-        <Botao variante="secundario" icone={<ArrowLeft size={16} />} onClick={() => escolher(null)}>Voltar</Botao>
-        <Botao onClick={salvar} carregando={salvando}>Lançar</Botao>
+        {corrigindo
+          ? <Botao variante="secundario" onClick={aoFechar}>Cancelar</Botao>
+          : <Botao variante="secundario" icone={<ArrowLeft size={16} />} onClick={() => escolher(null)}>Voltar</Botao>}
+        <Botao onClick={salvar} carregando={salvando}>{corrigindo ? 'Salvar correção' : 'Lançar'}</Botao>
       </>
     ) : undefined}>
       {!config ? (
@@ -135,6 +145,16 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
       )}
     </Janela>
   );
+};
+
+// Dados do lançamento original no formato dos campos do formulário (números das ordenhas viram texto)
+const dadosParaCorrigir = (evento: Evento): Record<string, any> => {
+  const { corrigido_de, ...dados } = evento.dados;
+  if (evento.tipo === 'controle_leiteiro') {
+    const ordenhas: number[] = dados.ordenhas?.length ? dados.ordenhas : dados.litros != null ? [dados.litros] : [];
+    return { ...dados, ordenhas: ordenhas.map(String).concat(ordenhas.length < 2 ? [''] : []) };
+  }
+  return dados;
 };
 
 const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; sexo: 'F' | 'M'; calendario: ManejoSanitario[]; aoMudar: (v: any) => void }> = ({ campo, valor, lotes, sexo, calendario, aoMudar }) => {

@@ -137,10 +137,16 @@ export const api = {
     request<FichaAnimal>(`/fazendas/${id}/animais/${animalId}${funcionarioId ? `?funcionario_id=${funcionarioId}` : ''}`),
   criarAnimal: (id: number, dados: Record<string, any>) =>
     request<FichaAnimal>(`/fazendas/${id}/animais`, { method: 'POST', body: dados }),
+  // Correção de cadastro (fica no histórico como "Correção de cadastro")
+  editarAnimal: (id: number, animalId: number, dados: Record<string, any>) =>
+    request<FichaAnimal>(`/fazendas/${id}/animais/${animalId}`, { method: 'PUT', body: dados }),
   excluirAnimal: (id: number, animalId: number) =>
     request(`/fazendas/${id}/animais/${animalId}`, { method: 'DELETE' }),
   lancarEvento: (id: number, animalId: number, evento: { tipo: string; data: string; dados: Record<string, any>; observacao?: string; funcionario_id?: number }) =>
     request<{ evento: Evento; avisos: string[]; ficha: FichaAnimal }>(`/fazendas/${id}/animais/${animalId}/eventos`, { method: 'POST', body: evento }),
+  corrigirEvento: (id: number, eventoId: number, evento: { data: string; dados: Record<string, any>; observacao?: string; funcionario_id?: number }) =>
+    request<{ evento: Evento; avisos: string[]; ficha: FichaAnimal }>(
+      `/fazendas/${id}/eventos/${eventoId}${evento.funcionario_id ? `?funcionario_id=${evento.funcionario_id}` : ''}`, { method: 'PUT', body: evento }),
   excluirEvento: (id: number, eventoId: number, funcionarioId?: number) =>
     request<FichaAnimal>(`/fazendas/${id}/eventos/${eventoId}${funcionarioId ? `?funcionario_id=${funcionarioId}` : ''}`, { method: 'DELETE' }),
 

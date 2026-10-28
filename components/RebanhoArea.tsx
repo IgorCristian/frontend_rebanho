@@ -20,8 +20,8 @@ export const RebanhoArea: React.FC<Props> = ({ fazendaId, visao, ehGestor, funci
 
   useEffect(() => {
     Promise.all([api.tiposEvento(fazendaId), api.listarLotes(fazendaId), api.listarCalendario(fazendaId)])
-      .then(([tipos, lotes, calendario]) => setApoio({ tipos: tipos.tipos, lotes: lotes as Lote[], calendario, funcionarioId, ehGestor }))
-      .catch(() => setApoio({ tipos: [], lotes: [], calendario: [], funcionarioId, ehGestor }));
+      .then(([tipos, lotes, calendario]) => setApoio({ tipos: tipos.tipos, perfil: tipos.perfil, lotes: lotes as Lote[], calendario, funcionarioId, ehGestor }))
+      .catch(() => setApoio({ tipos: [], perfil: null, lotes: [], calendario: [], funcionarioId, ehGestor }));
   }, [fazendaId, funcionarioId, ehGestor]);
 
   // Trocar de aba volta para a lista

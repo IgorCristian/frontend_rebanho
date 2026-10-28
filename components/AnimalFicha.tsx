@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Plus, AlertTriangle, Trash2, History, Baby } from 'lucide-react';
+import { ArrowLeft, Plus, AlertTriangle, Trash2, History, Baby, Pencil } from 'lucide-react';
 import { api } from '../services/api';
-import { CATEGORIAS, FichaAnimal, Lote, ManejoSanitario } from '../types';
+import { CATEGORIAS, Evento, FichaAnimal, Lote, ManejoSanitario } from '../types';
 import { data, numero, idade, diasAte, SITUACAO_REPRODUTIVA, FASE_LACTACAO, COR_PRIORIDADE, resumoDados } from '../services/formato';
 import { EVENTOS, eventoSeAplica } from '../services/eventos';
 import { Botao, Cartao, Selo, Carregando } from './ui';
 import { LancarEventoJanela } from './LancarEventoJanela';
+import { CorrigirCadastroJanela } from './CorrigirCadastroJanela';
 
 export interface ApoioLancamento {
   tipos: string[];          // tipos de evento que quem está logado pode lançar
+  perfil: string | null;    // 'gestor', 'veterinario', 'equipe' ou null (só leitura)
   lotes: Lote[];
   calendario: ManejoSanitario[];  // itens do calendário sanitário (vacinação/vermifugação)
   funcionarioId?: number;   // acesso da fazenda
@@ -26,7 +28,8 @@ interface Props {
 
 export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVoltar, aoAbrirAnimal }) => {
   const [ficha, setFicha] = useState<FichaAnimal | null>(null);
-  const [lancando, setLancando] = useState<{ tipo: string | null; dados?: Record<string, any> } | null>(null);
+  const [lancando, setLancando] = useState<{ tipo: string | null; dados?: Record<string, any>; corrigindo?: Evento } | null>(null);
+  const [corrigindoCadastro, setCorrigindoCadastro] = useState(false);
 
   useEffect(() => {
     setFicha(null);
@@ -37,6 +40,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
   const { animal, estado: e, alertas, eventos } = ficha;
   const ativo = e.status === 'ativo';
   const podeLancar = ativo && apoio.tipos.some(t => EVENTOS[t] && eventoSeAplica(t, e.categoria));
+  const podeCorrigirCadastro = apoio.perfil === 'gestor' || apoio.perfil === 'veterinario';
 
   const excluirEvento = async (id: number, nome: string) => {
     if (!confirm(`Excluir o lançamento "${nome}"? A categoria e os alertas serão recalculados.`)) return;
@@ -174,6 +178,12 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
           )}
           {animal.pai_semen && <Info rotulo="Pai / sêmen" valor={animal.pai_semen} />}
           {animal.peso_nascer != null && <Info rotulo="Peso ao nascer" valor={`${numero(animal.peso_nascer, 1)} kg`} />}
+          {animal.observacoes && <Info rotulo="Observações" valor={animal.observacoes} />}
+          {podeCorrigirCadastro && (
+            <button onClick={() => setCorrigindoCadastro(true)} className="flex items-center gap-1.5 pt-1 text-xs font-semibold text-[#050D21] underline underline-offset-2">
+              <Pencil size={13} /> Corrigir cadastro
+            </button>
+          )}
         </Bloco>
       </div>
 
@@ -200,6 +210,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
                 <p className="text-sm font-semibold text-gray-900">{ev.tipo_nome}</p>
                 {resumoDados(ev.tipo, ev.dados) && <p className="text-xs text-gray-600 mt-0.5">{resumoDados(ev.tipo, ev.dados)}</p>}
                 {ev.observacao && <p className="text-xs text-gray-500 italic mt-0.5">{ev.observacao}</p>}
+                {ev.dados.corrigido_de && <p className="text-[11px] text-amber-700 mt-1">Lançamento corrigido</p>}
                 {ev.lancado_por && <p className="text-[11px] text-gray-400 mt-1">por {ev.lancado_por.nome}</p>}
                 {ev.gestao && (
                   <p className={`text-[11px] mt-1 font-semibold ${ev.gestao.status === 'enviado' ? 'text-green-700' : ev.gestao.status === 'erro' ? 'text-red-600' : 'text-amber-600'}`}
@@ -208,8 +219,13 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
                   </p>
                 )}
               </div>
+              {ev.pode_corrigir && EVENTOS[ev.tipo] && (
+                <button onClick={() => setLancando({ tipo: ev.tipo, corrigindo: ev })} className="p-1.5 text-gray-400 hover:text-[#050D21] rounded-lg hover:bg-gray-100" title="Corrigir lançamento">
+                  <Pencil size={16} />
+                </button>
+              )}
               {ev.pode_excluir && (
-                <button onClick={() => excluirEvento(ev.id, ev.tipo_nome)} className="p-1.5 text-gray-300 hover:text-red-600 rounded-lg hover:bg-red-50" title="Excluir lançamento">
+                <button onClick={() => excluirEvento(ev.id, ev.tipo_nome)} className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50" title="Excluir lançamento">
                   <Trash2 size={16} />
                 </button>
               )}
@@ -235,8 +251,13 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
       <LancarEventoJanela aberta={!!lancando} fazendaId={fazendaId} ficha={ficha} tiposPermitidos={apoio.tipos} lotes={apoio.lotes}
         funcionarioId={apoio.funcionarioId} tipoInicial={lancando?.tipo} dadosIniciais={lancando?.dados}
-        calendario={apoio.calendario} aoFechar={() => setLancando(null)}
+        corrigindo={lancando?.corrigindo} calendario={apoio.calendario} aoFechar={() => setLancando(null)}
         aoLancar={(nova) => { setFicha(nova); setLancando(null); }} />
+      {podeCorrigirCadastro && (
+        <CorrigirCadastroJanela aberta={corrigindoCadastro} fazendaId={fazendaId} animal={animal}
+          aoFechar={() => setCorrigindoCadastro(false)}
+          aoSalvar={(nova) => { setFicha(nova); setCorrigindoCadastro(false); }} />
+      )}
     </div>
   );
 };

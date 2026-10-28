@@ -187,6 +187,7 @@ export interface Evento {
   observacao: string | null;
   lancado_por: { tipo: 'usuario' | 'funcionario'; nome: string } | null;
   pode_excluir: boolean;
+  pode_corrigir: boolean;  // corrigir = excluir + lançar de novo (parto fica de fora)
   gestao?: { status: StatusEnvio; erro: string | null } | null;  // venda/compra enviada ao financeiro do Gestão
 }
 

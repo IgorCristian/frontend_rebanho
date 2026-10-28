@@ -60,6 +60,9 @@ export const NOME_PRIORIDADE = { alta: 'Urgente', media: 'Atenção', baixa: 'Le
 export const resumoDados = (tipo: string, dados: Record<string, any>) => {
   const partes: string[] = [];
   const add = (texto?: string | false | null) => texto && partes.push(texto);
+  if (tipo === 'correcao_cadastro') {
+    return (dados.alteracoes || []).map((a: any) => `${a.rotulo}: ${a.antes ?? '—'} → ${a.depois ?? '—'}`).join(' · ');
+  }
   add(dados.categoria && `Categoria ${dados.categoria}`);
   add(dados.peso != null && `${numero(dados.peso, 1)} kg`);
   add(dados.positivo === true && (tipo === 'reconfirmacao' ? 'Continua prenha' : 'Prenha'));
