@@ -1,5 +1,6 @@
 import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel, AnimalResumo, AlertaDoDia, FichaAnimal, Evento,
-  ManejoSanitario, Indicador, MetaIndicador, RelatorioControleLeiteiro, ClienteGestao, IntegracaoStatus, InsumoGestao } from '../types';
+  ManejoSanitario, Indicador, MetaIndicador, RelatorioControleLeiteiro, ClienteGestao, IntegracaoStatus, InsumoGestao,
+  DietaItem, RelatorioDietas } from '../types';
 
 export const API_URL = (import.meta as any).env.VITE_API_URL;
 
@@ -168,4 +169,10 @@ export const api = {
   integracao: (id: number) => request<IntegracaoStatus>(`/fazendas/${id}/integracao`),
   sincronizarGestao: (id: number) => request<IntegracaoStatus>(`/fazendas/${id}/integracao/sincronizar`, { method: 'POST' }),
   insumosGestao: (id: number) => request<InsumoGestao[]>(`/fazendas/${id}/integracao/insumos`),
+
+  // --- Fase 6: dietas e relatórios de custo ---
+  listarDietas: (id: number) => request<DietaItem[]>(`/fazendas/${id}/dietas`),
+  salvarDieta: (id: number, loteId: number, itens: { gestao_produto_id: number; kg_animal_dia: string; kg_por_unidade?: string }[]) =>
+    request<DietaItem[]>(`/fazendas/${id}/lotes/${loteId}/dieta`, { method: 'PUT', body: { itens } }),
+  relatorioDietas: (id: number) => request<RelatorioDietas>(`/fazendas/${id}/relatorios/dietas`),
 };

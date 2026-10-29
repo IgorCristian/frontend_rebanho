@@ -87,7 +87,7 @@ export const FazendaArea: React.FC<Props> = ({ fazendaId, usuario, aoTrocarFazen
         </>
       )}
 
-      {pagina === 'resultados' && <ResultadosPagina fazendaId={fazenda.id} />}
+      {pagina === 'resultados' && <ResultadosPagina fazendaId={fazenda.id} gerencia={gerencia} />}
 
       {pagina === 'configuracoes' && (
         <>

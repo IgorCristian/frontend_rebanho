@@ -287,3 +287,55 @@ export interface InsumoGestao {
   ultimo_preco: number | null;
   data_ultima_compra: string | null;
 }
+
+// ---------- Fase 6: dietas por lote e relatórios de custo ----------
+
+export interface DietaItem {
+  id: number;
+  lote_id: number;
+  gestao_produto_id: number;
+  insumo_nome: string;
+  unidade: string | null;
+  kg_por_unidade: number;
+  kg_animal_dia: number;
+}
+
+export type OrigemPreco = 'custo_medio' | 'ultimo_preco' | null;
+
+export interface RelatorioDietas {
+  data: string;
+  gestao_vinculado: boolean;
+  gestao_erro: string | null;
+  preco_leite: number | null;
+  avisos: string[];
+  dietas: {
+    lote_id: number; lote: string; animais: number; kg_animal_dia: number; kg_dia: number;
+    custo_animal_dia: number | null; custo_dia: number | null;
+    itens: { insumo_id: number; insumo: string; unidade: string | null; kg_por_unidade: number; kg_animal_dia: number; kg_dia: number;
+      custo_kg: number | null; preco_origem: OrigemPreco; custo_animal_dia: number | null; custo_dia: number | null }[];
+  }[];
+  insumos: {
+    insumo_id: number; insumo: string; unidade: string | null; kg_por_unidade: number; preco_unidade: number | null;
+    preco_origem: OrigemPreco; custo_kg: number | null; kg_dia: number; kg_mes: number; custo_dia: number | null;
+    custo_mes: number | null; estoque: number | null; estoque_kg: number | null; dias_estoque: number | null; lotes: string[];
+  }[];
+  resumo: ResumoLote[];
+  totais: Omit<ResumoLote, 'lote_id' | 'lote' | 'tem_dieta' | 'custo_animal_dia'>;
+}
+
+export interface ResumoLote {
+  lote_id: number | null;
+  lote: string;
+  animais: number;
+  vacas_lactacao: number;
+  tem_dieta: boolean;
+  kg_dia: number | null;
+  custo_dia: number | null;
+  custo_animal_dia: number | null;
+  leite_dia: number | null;
+  leite_vendavel_dia: number | null;
+  receita_dia: number | null;
+  sobra_dia: number | null;
+  sobra_mes: number | null;
+  custo_litro: number | null;
+}
