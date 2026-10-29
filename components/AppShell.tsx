@@ -15,12 +15,13 @@ interface Props {
   usuario: { nome: string; detalhe: string };
   aoSair: () => void;
   trocar?: { rotulo: string; acao: () => void };   // trocar fazenda / trocar funcionário
+  largo?: boolean;                      // páginas com tabelas largas (Resultados)
   children: React.ReactNode;
 }
 
 // Estrutura da área da fazenda: menu lateral no computador e menu inferior no celular
 // (mesma identidade do painel corporativo do AleEdu: marinho #050D21 + menta #56E39F).
-export const AppShell: React.FC<Props> = ({ titulo, itens, ativo, aoNavegar, usuario, aoSair, trocar, children }) => (
+export const AppShell: React.FC<Props> = ({ titulo, itens, ativo, aoNavegar, usuario, aoSair, trocar, largo, children }) => (
   <div className="min-h-screen lg:flex">
     {/* Menu lateral (computador) */}
     <aside className="hidden lg:flex lg:flex-col w-72 shrink-0 bg-[#050D21] text-white h-screen sticky top-0">
@@ -69,7 +70,7 @@ export const AppShell: React.FC<Props> = ({ titulo, itens, ativo, aoNavegar, usu
     </header>
 
     <main className="flex-1 min-w-0 pb-28 lg:pb-10">
-      <div className="max-w-4xl mx-auto px-4 py-5 lg:py-8">{children}</div>
+      <div className={`${largo ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 py-5 lg:py-8`}>{children}</div>
     </main>
 
     {/* Menu inferior (celular) */}

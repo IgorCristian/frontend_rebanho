@@ -68,6 +68,7 @@ export const FazendaArea: React.FC<Props> = ({ fazendaId, usuario, aoTrocarFazen
       usuario={{ nome: usuario.nome, detalhe: PAPEIS_LABEL[usuario.papel] }}
       aoSair={aoSair}
       trocar={{ rotulo: 'Trocar fazenda', acao: aoTrocarFazenda }}
+      largo={pagina === 'resultados'}
     >
       {!fazenda.ativa && <div className="mb-4"><Selo cor="vermelho">Fazenda desativada</Selo></div>}
 
