@@ -1,6 +1,6 @@
 import { Fazenda, Funcionario, Lote, Parametro, Sessao, Usuario, Papel, AnimalResumo, AlertaDoDia, FichaAnimal, Evento,
   ManejoSanitario, Indicador, MetaIndicador, RelatorioControleLeiteiro, ClienteGestao, IntegracaoStatus, InsumoGestao,
-  DietaItem, RelatorioDietas } from '../types';
+  DietaItem, RelatorioDietas, CulturaInfo, Plantacao, SituacaoPlantacoesGestao, ResumoSaidaLeite, SaidaLeite } from '../types';
 
 export const API_URL = (import.meta as any).env.VITE_API_URL;
 
@@ -164,6 +164,14 @@ export const api = {
   relatorioControleLeiteiro: (id: number, inicio: string, fim: string) =>
     request<RelatorioControleLeiteiro>(`/fazendas/${id}/relatorios/controle-leiteiro?inicio=${inicio}&fim=${fim}`),
 
+  // --- Saída de leite ---
+  saidasLeite: (id: number, mes: string, funcionarioId?: number) =>
+    request<ResumoSaidaLeite>(`/fazendas/${id}/saidas-leite?mes=${mes}${funcionarioId ? `&funcionario_id=${funcionarioId}` : ''}`),
+  salvarSaidaLeite: (id: number, dia: string, dados: Record<string, any>) =>
+    request<SaidaLeite>(`/fazendas/${id}/saidas-leite/${dia}`, { method: 'PUT', body: dados }),
+  excluirSaidaLeite: (id: number, dia: string, funcionarioId?: number) =>
+    request(`/fazendas/${id}/saidas-leite/${dia}${funcionarioId ? `?funcionario_id=${funcionarioId}` : ''}`, { method: 'DELETE' }),
+
   // --- Fase 5: integração com o Gestão Fácil ---
   clientesGestao: () => request<ClienteGestao[]>('/integracao/gestao/clientes'),
   integracao: (id: number) => request<IntegracaoStatus>(`/fazendas/${id}/integracao`),
@@ -175,4 +183,18 @@ export const api = {
   salvarDieta: (id: number, loteId: number, itens: { gestao_produto_id: number; kg_animal_dia: string; kg_por_unidade?: string }[]) =>
     request<DietaItem[]>(`/fazendas/${id}/lotes/${loteId}/dieta`, { method: 'PUT', body: { itens } }),
   relatorioDietas: (id: number) => request<RelatorioDietas>(`/fazendas/${id}/relatorios/dietas`),
+
+  // --- Mapa personalizado do jogo ---
+  obterMapaJogo: (id: number) => request<{ layout: unknown }>(`/fazendas/${id}/mapa-jogo`),
+  salvarMapaJogo: (id: number, layout: unknown) =>
+    request<{ layout: unknown }>(`/fazendas/${id}/mapa-jogo`, { method: 'PUT', body: { layout } }),
+
+  // --- Plantações ---
+  listarPlantacoes: (id: number) => request<{ culturas: CulturaInfo[]; plantacoes: Plantacao[]; gestao: SituacaoPlantacoesGestao }>(`/fazendas/${id}/plantacoes`),
+  criarPlantacao: (id: number, dados: Record<string, any>) =>
+    request<Plantacao>(`/fazendas/${id}/plantacoes`, { method: 'POST', body: dados }),
+  editarPlantacao: (id: number, plantacaoId: number, dados: Record<string, any>) =>
+    request<Plantacao>(`/fazendas/${id}/plantacoes/${plantacaoId}`, { method: 'PUT', body: dados }),
+  excluirPlantacao: (id: number, plantacaoId: number) =>
+    request(`/fazendas/${id}/plantacoes/${plantacaoId}`, { method: 'DELETE' }),
 };

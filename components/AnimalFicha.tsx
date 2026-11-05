@@ -3,9 +3,10 @@ import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, AlertTriangle, Trash2, History, Baby, Pencil } from 'lucide-react';
 import { api } from '../services/api';
 import { CATEGORIAS, Evento, FichaAnimal, Lote, ManejoSanitario } from '../types';
-import { data, numero, idade, diasAte, SITUACAO_REPRODUTIVA, FASE_LACTACAO, COR_PRIORIDADE, resumoDados } from '../services/formato';
+import { data, numero, idade, diasAte, SITUACAO_REPRODUTIVA, FASE_LACTACAO, COR_PRIORIDADE, resumoDados, traduzirGrauSangue } from '../services/formato';
 import { EVENTOS, eventoSeAplica } from '../services/eventos';
-import { Botao, Cartao, Selo, Carregando } from './ui';
+import { AJUDA, AJUDA_ALERTA, TextoAjuda } from '../services/ajuda';
+import { Ajuda, Botao, Cartao, Selo, Carregando, confirmar } from './ui';
 import { LancarEventoJanela } from './LancarEventoJanela';
 import { CorrigirCadastroJanela } from './CorrigirCadastroJanela';
 
@@ -22,7 +23,7 @@ interface Props {
   fazendaId: number;
   animalId: number;
   apoio: ApoioLancamento;
-  aoVoltar: () => void;
+  aoVoltar: (fichaSumiu?: boolean) => void;  // fichaSumiu: o animal não existe mais, tira a ficha do histórico
   aoAbrirAnimal: (animalId: number) => void;
 }
 
@@ -33,7 +34,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
   useEffect(() => {
     setFicha(null);
-    api.obterAnimal(fazendaId, animalId, apoio.funcionarioId).then(setFicha).catch((err) => { toast.error(err.message); aoVoltar(); });
+    api.obterAnimal(fazendaId, animalId, apoio.funcionarioId).then(setFicha).catch((err) => { toast.error(err.message); aoVoltar(true); });
   }, [fazendaId, animalId, apoio.funcionarioId]);
 
   if (!ficha) return <Carregando />;
@@ -43,7 +44,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
   const podeCorrigirCadastro = apoio.perfil === 'gestor' || apoio.perfil === 'veterinario';
 
   const excluirEvento = async (id: number, nome: string) => {
-    if (!confirm(`Excluir o lançamento "${nome}"? A categoria e os alertas serão recalculados.`)) return;
+    if (!(await confirmar(`Excluir o lançamento "${nome}"? A categoria e os alertas serão recalculados.`, { botao: 'Excluir', perigo: true }))) return;
     try {
       setFicha(await api.excluirEvento(fazendaId, id, apoio.funcionarioId));
       toast.success('Lançamento excluído.');
@@ -53,11 +54,11 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
   };
 
   const excluirCadastro = async () => {
-    if (!confirm(`Excluir o cadastro do brinco ${animal.brinco} com todo o histórico? Use só se foi cadastrado por engano. Para saída do rebanho, lance Venda ou Morte.`)) return;
+    if (!(await confirmar(`Excluir o cadastro do brinco ${animal.brinco} com todo o histórico? Use só se foi cadastrado por engano. Para saída do rebanho, lance Venda ou Morte.`, { botao: 'Excluir', perigo: true }))) return;
     try {
       await api.excluirAnimal(fazendaId, animal.id);
       toast.success('Cadastro excluído.');
-      aoVoltar();
+      aoVoltar(true);
     } catch (err: any) {
       toast.error(err.message, { duration: 6000 });
     }
@@ -73,7 +74,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
   return (
     <div className="space-y-4 pb-20">
-      <button onClick={aoVoltar} className="flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-900">
+      <button onClick={() => aoVoltar()} className="flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-900">
         <ArrowLeft size={18} /> Voltar
       </button>
 
@@ -86,6 +87,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
           <h2 className="text-xl font-bold text-gray-900 truncate">{animal.nome || `Brinco ${animal.brinco}`}</h2>
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
             {e.categoria && <Selo cor={ativo ? 'verde' : 'vermelho'}>{CATEGORIAS[e.categoria]}</Selo>}
+            {e.categoria && <Ajuda item={AJUDA.categoria} />}
             {!ativo && <Selo cor="vermelho">{e.motivo_baixa === 'venda' ? 'Vendido' : 'Morto'} em {data(e.data_baixa)}</Selo>}
             {e.lote && <Selo cor="azul">{e.lote.nome}</Selo>}
             {e.em_carencia && <Selo cor="vermelho">Leite em carência</Selo>}
@@ -104,7 +106,10 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
             <div key={`${a.codigo}-${i}`} className={`rounded-xl border p-3 flex items-start gap-3 ${COR_PRIORIDADE[a.prioridade]}`}>
               <AlertTriangle size={18} className="shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">{a.titulo}</p>
+                <p className="font-semibold text-sm flex items-center gap-2">
+                  {a.titulo}
+                  {AJUDA_ALERTA[a.codigo] && <Ajuda item={{ titulo: a.titulo, texto: AJUDA_ALERTA[a.codigo] }} />}
+                </p>
                 <p className="text-xs opacity-90 mt-0.5">{a.mensagem}</p>
               </div>
               {a.resolve_com && apoio.tipos.includes(a.resolve_com) && eventoSeAplica(a.resolve_com, e.categoria) && (
@@ -121,13 +126,13 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
       <div className="grid gap-3 sm:grid-cols-2">
         {reprodutiva && (
           <Bloco titulo="Reprodução">
-            <Info rotulo="Situação" valor={e.situacao_reprodutiva ? SITUACAO_REPRODUTIVA[e.situacao_reprodutiva] : '—'} />
-            <Info rotulo="IAs no ciclo" valor={numero(e.ias_no_ciclo)} />
+            <Info rotulo="Situação" ajuda={AJUDA.situacao} valor={e.situacao_reprodutiva ? SITUACAO_REPRODUTIVA[e.situacao_reprodutiva] : '—'} />
+            <Info rotulo="IAs no ciclo" ajuda={AJUDA.iasNoCiclo} valor={numero(e.ias_no_ciclo)} />
             {e.data_ultima_ia && <Info rotulo="Última IA" valor={`${data(e.data_ultima_ia)}${e.touro_ultima_ia ? ` · ${e.touro_ultima_ia}` : ''}`} />}
-            {e.parto_previsto && <Info rotulo="Parto previsto" valor={data(e.parto_previsto) + prazoTexto(e.parto_previsto)} destaque />}
-            {e.pre_parto_previsto && <Info rotulo="Entrada no pré-parto" valor={data(e.pre_parto_previsto) + prazoTexto(e.pre_parto_previsto)} />}
-            {e.secagem_prevista && <Info rotulo="Secagem prevista" valor={data(e.secagem_prevista) + prazoTexto(e.secagem_prevista)} />}
-            {e.dias_em_aberto != null && <Info rotulo="Dias em aberto" valor={numero(e.dias_em_aberto)} />}
+            {e.parto_previsto && <Info rotulo="Parto previsto" ajuda={AJUDA.partoPrevisto} valor={data(e.parto_previsto) + prazoTexto(e.parto_previsto)} destaque />}
+            {e.pre_parto_previsto && <Info rotulo="Entrada no pré-parto" ajuda={AJUDA.prePartoPrevisto} valor={data(e.pre_parto_previsto) + prazoTexto(e.pre_parto_previsto)} />}
+            {e.secagem_prevista && <Info rotulo="Secagem prevista" ajuda={AJUDA.secagemPrevista} valor={data(e.secagem_prevista) + prazoTexto(e.secagem_prevista)} />}
+            {e.dias_em_aberto != null && <Info rotulo="Dias em aberto" ajuda={AJUDA.diasEmAberto} valor={numero(e.dias_em_aberto)} />}
           </Bloco>
         )}
 
@@ -135,23 +140,23 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
           <Bloco titulo="Lactação">
             <Info rotulo="Nº de partos" valor={numero(e.ordem_lactacao)} />
             {e.data_ultimo_parto && <Info rotulo="Último parto" valor={data(e.data_ultimo_parto)} />}
-            {e.del_ != null && <Info rotulo="DEL" valor={`${numero(e.del_)}${e.fase_lactacao ? ` · ${FASE_LACTACAO[e.fase_lactacao]}` : ''}`} destaque />}
-            {e.media_litros_dia != null && <Info rotulo="Média" valor={`${numero(e.media_litros_dia, 1)} L/dia`} />}
-            {e.producao_acumulada != null && <Info rotulo="Produção na lactação" valor={`${numero(e.producao_acumulada)} L`} />}
-            {e.producao_305 != null && <Info rotulo="Produção em 305 dias" valor={`${numero(e.producao_305)} L`} />}
-            {e.iep_ultimo != null && <Info rotulo="Intervalo entre partos" valor={`${numero(e.iep_ultimo)} dias`} />}
+            {e.del_ != null && <Info rotulo="DEL" ajuda={AJUDA.del} valor={`${numero(e.del_)}${e.fase_lactacao ? ` · ${FASE_LACTACAO[e.fase_lactacao]}` : ''}`} destaque />}
+            {e.media_litros_dia != null && <Info rotulo="Média" ajuda={AJUDA.mediaLeite} valor={`${numero(e.media_litros_dia, 1)} L/dia`} />}
+            {e.producao_acumulada != null && <Info rotulo="Produção na lactação" ajuda={AJUDA.producaoLactacao} valor={`${numero(e.producao_acumulada)} L`} />}
+            {e.producao_305 != null && <Info rotulo="Produção em 305 dias" ajuda={AJUDA.producao305} valor={`${numero(e.producao_305)} L`} />}
+            {e.iep_ultimo != null && <Info rotulo="Intervalo entre partos" ajuda={AJUDA.iep} valor={`${numero(e.iep_ultimo)} dias`} />}
             {e.idade_primeiro_parto_meses != null && <Info rotulo="Idade ao 1º parto" valor={`${numero(e.idade_primeiro_parto_meses, 1)} meses`} />}
           </Bloco>
         )}
 
         <Bloco titulo="Crescimento">
           <Info rotulo="Último peso" valor={e.ultimo_peso != null ? `${numero(e.ultimo_peso, 1)} kg em ${data(e.data_ultimo_peso)}` : '—'} />
-          {e.gmd != null && <Info rotulo="Ganho médio diário" valor={`${numero(e.gmd, 3)} kg/dia`} />}
-          {e.pct_peso_adulto != null && <Info rotulo="% do peso adulto" valor={`${numero(e.pct_peso_adulto * 100)}%`} />}
+          {e.gmd != null && <Info rotulo="Ganho médio diário" ajuda={AJUDA.gmd} valor={`${numero(e.gmd, 3)} kg/dia`} />}
+          {e.pct_peso_adulto != null && <Info rotulo="% do peso adulto" ajuda={AJUDA.pctPesoAdulto} valor={`${numero(e.pct_peso_adulto * 100)}%`} />}
           {e.categoria === 'REC' && (
             <>
-              <Info rotulo="Critérios de cobertura" valor={e.criterios_aptidao_atingidos ? 'Atingidos' : 'Ainda não'} />
-              {e.prazo_aptidao && <Info rotulo="Prazo de aptidão" valor={data(e.prazo_aptidao) + prazoTexto(e.prazo_aptidao)} />}
+              <Info rotulo="Critérios de cobertura" ajuda={AJUDA.criteriosCobertura} valor={e.criterios_aptidao_atingidos ? 'Atingidos' : 'Ainda não'} />
+              {e.prazo_aptidao && <Info rotulo="Prazo de aptidão" ajuda={AJUDA.prazoAptidao} valor={data(e.prazo_aptidao) + prazoTexto(e.prazo_aptidao)} />}
             </>
           )}
           {e.adiamentos_aptidao > 0 && <Info rotulo="Aptidão adiada" valor={`${e.adiamentos_aptidao}x · ${e.dias_atraso_aptidao} dias de atraso`} />}
@@ -159,10 +164,10 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
         {(ehFemea && e.ordem_lactacao > 0 || e.ultimo_escore != null || e.carencia_ate || Object.keys(e.ultimas_aplicacoes).length > 0) && (
           <Bloco titulo="Saúde">
-            {e.carencia_ate && <Info rotulo="Carência do leite" valor={`${e.em_carencia ? 'até' : 'terminou em'} ${data(e.carencia_ate)}`} />}
-            {e.ultimo_escore != null && <Info rotulo="Escore corporal" valor={numero(e.ultimo_escore, 1)} />}
-            {e.ordem_lactacao > 0 && <Info rotulo="Mastite na lactação" valor={`${e.casos_mastite_lactacao} caso(s)`} />}
-            {e.candidata_descarte && <Info rotulo="Candidata a descarte" valor={e.motivos_descarte.join('; ')} />}
+            {e.carencia_ate && <Info rotulo="Carência do leite" ajuda={AJUDA.carencia} valor={`${e.em_carencia ? 'até' : 'terminou em'} ${data(e.carencia_ate)}`} />}
+            {e.ultimo_escore != null && <Info rotulo="Escore corporal" ajuda={AJUDA.escore} valor={numero(e.ultimo_escore, 1)} />}
+            {e.ordem_lactacao > 0 && <Info rotulo="Mastite na lactação" ajuda={AJUDA.mastite} valor={`${e.casos_mastite_lactacao} caso(s)`} />}
+            {e.candidata_descarte && <Info rotulo="Candidata a descarte" ajuda={AJUDA.candidataDescarte} valor={e.motivos_descarte.join('; ')} />}
             {Object.entries(e.ultimas_aplicacoes).map(([id, quando]) => (
               <Info key={id} rotulo={apoio.calendario.find(m => m.id === Number(id))?.nome || 'Vacina'} valor={`aplicada em ${data(quando)}`} />
             ))}
@@ -172,7 +177,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
         <Bloco titulo="Identificação">
           <Info rotulo="Nascimento" valor={`${data(animal.data_nascimento)}${animal.nascimento_estimado ? ' (estimada)' : ''}`} />
           <Info rotulo="Origem" valor={animal.origem === 'comprado' ? 'Comprado' : 'Nascido na fazenda'} />
-          {animal.grau_sangue && <Info rotulo="Grau de sangue" valor={animal.grau_sangue} />}
+          {animal.grau_sangue && <Info rotulo="Grau de sangue" ajuda={AJUDA.grauSangue} valor={traduzirGrauSangue(animal.grau_sangue) || animal.grau_sangue} />}
           {animal.mae && (
             <Info rotulo="Mãe" valor={<button className="font-semibold text-[#050D21] underline" onClick={() => aoAbrirAnimal(animal.mae!.id)}>{animal.mae.brinco}{animal.mae.nome ? ` · ${animal.mae.nome}` : ''}</button>} />
           )}
@@ -201,7 +206,7 @@ export const AnimalFicha: React.FC<Props> = ({ fazendaId, animalId, apoio, aoVol
 
       {/* Histórico */}
       <section>
-        <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-2 ml-1"><History size={16} /> Histórico</h3>
+        <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-2 ml-1"><History size={16} /> Histórico <Ajuda item={AJUDA.historico} /></h3>
         <Cartao className="divide-y divide-gray-100">
           {eventos.map(ev => (
             <div key={ev.id} className="p-3 flex items-start gap-3">
@@ -269,9 +274,9 @@ const Bloco: React.FC<{ titulo: string; children: React.ReactNode }> = ({ titulo
   </Cartao>
 );
 
-const Info: React.FC<{ rotulo: string; valor: React.ReactNode; destaque?: boolean }> = ({ rotulo, valor, destaque }) => (
+const Info: React.FC<{ rotulo: string; valor: React.ReactNode; destaque?: boolean; ajuda?: TextoAjuda }> = ({ rotulo, valor, destaque, ajuda }) => (
   <div className="flex items-baseline justify-between gap-3 text-sm">
-    <span className="text-gray-500">{rotulo}</span>
+    <span className="text-gray-500">{rotulo}{ajuda && <span className="ml-1.5"><Ajuda item={ajuda} /></span>}</span>
     <span className={`text-right ${destaque ? 'font-bold text-gray-900' : 'font-medium text-gray-800'}`}>{valor}</span>
   </div>
 );

@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { Plus, UserCircle2, Pencil, UserPlus, Mail, Unlink } from 'lucide-react';
 import { api } from '../services/api';
 import { Funcionario, Usuario, Papel, PAPEIS_LABEL, PAPEIS_VINCULADOS } from '../types';
-import { Botao, Campo, Entrada, Selecao, Cartao, Selo, Janela, Vazio, Carregando, TituloSecao } from './ui';
+import { AJUDA } from '../services/ajuda';
+import { Botao, Campo, Entrada, Selecao, Cartao, Selo, Janela, Vazio, Carregando, TituloSecao, confirmar } from './ui';
 
 interface Props {
   fazendaId: number;
@@ -61,6 +62,7 @@ const FuncionariosSecao: React.FC<Props> = ({ fazendaId, podeEditar }) => {
     <section>
       <TituloSecao
         titulo="Funcionários"
+        ajuda={AJUDA.funcionarios}
         descricao="Entram pelo código da fazenda + PIN e escolhem o próprio nome ao lançar."
         acao={podeEditar && <Botao icone={<Plus size={18} />} onClick={() => abrir('novo')}>Adicionar</Botao>}
       />
@@ -131,7 +133,7 @@ const UsuariosSecao: React.FC<{ fazendaId: number }> = ({ fazendaId }) => {
   };
 
   const desvincular = async (u: Usuario) => {
-    if (!confirm(`Tirar ${u.nome} desta fazenda? A conta continua existindo.`)) return;
+    if (!(await confirmar(`Tirar ${u.nome} desta fazenda? A conta continua existindo.`))) return;
     try {
       await api.desvincularUsuario(fazendaId, u.id);
       carregar();
@@ -144,6 +146,7 @@ const UsuariosSecao: React.FC<{ fazendaId: number }> = ({ fazendaId }) => {
     <section>
       <TituloSecao
         titulo="Usuários com login"
+        ajuda={AJUDA.usuariosLogin}
         descricao="Veterinário/produtor e inseminador entram com e-mail e senha e só veem as fazendas em que foram incluídos."
         acao={<Botao icone={<UserPlus size={18} />} onClick={() => setAberto(true)}>Incluir</Botao>}
       />

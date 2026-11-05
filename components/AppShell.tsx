@@ -1,5 +1,7 @@
 import React from 'react';
 import { LogOut, ArrowLeftRight } from 'lucide-react';
+import { TextoAjuda } from '../services/ajuda';
+import { Ajuda } from './ui';
 
 export interface ItemMenu {
   id: string;
@@ -99,10 +101,10 @@ export const Abas: React.FC<{ abas: { id: string; rotulo: string }[]; ativa: str
   </nav>
 );
 
-export const TituloPagina: React.FC<{ titulo: string; descricao?: string; acao?: React.ReactNode }> = ({ titulo, descricao, acao }) => (
+export const TituloPagina: React.FC<{ titulo: string; descricao?: string; acao?: React.ReactNode; ajuda?: TextoAjuda }> = ({ titulo, descricao, acao, ajuda }) => (
   <div className="flex items-end justify-between gap-3 mb-4">
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">{titulo}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">{titulo}{ajuda && <Ajuda item={ajuda} />}</h1>
       {descricao && <p className="text-sm text-gray-500 mt-0.5">{descricao}</p>}
     </div>
     {acao}

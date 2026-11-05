@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { Plus, UserCog, Mail } from 'lucide-react';
 import { api } from '../services/api';
 import { Usuario } from '../types';
-import { Botao, Campo, Entrada, Cartao, Selo, Janela, Vazio, Carregando } from './ui';
+import { AJUDA } from '../services/ajuda';
+import { Ajuda, Botao, Campo, Entrada, Cartao, Selo, Janela, Vazio, Carregando, confirmar } from './ui';
 
 // Só o administrador vê esta tela: consultores não se cadastram sozinhos
 export const ConsultoresPanel: React.FC = () => {
@@ -33,7 +34,7 @@ export const ConsultoresPanel: React.FC = () => {
   };
 
   const alternarAtivo = async (c: Usuario) => {
-    if (c.ativo && !confirm(`Desativar ${c.nome}? Ele não vai conseguir mais entrar no app.`)) return;
+    if (c.ativo && !(await confirmar(`Desativar ${c.nome}? Ele não vai conseguir mais entrar no app.`))) return;
     try {
       await api.alterarAtivoUsuario(c.id, !c.ativo);
       carregar();
@@ -46,7 +47,7 @@ export const ConsultoresPanel: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Consultores</h1>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">Consultores <Ajuda item={AJUDA.consultores} /></h1>
           <p className="text-sm text-gray-500">Quem implanta e acompanha as fazendas</p>
         </div>
         <Botao icone={<Plus size={18} />} onClick={() => setCriando(true)}>Novo consultor</Botao>

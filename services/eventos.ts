@@ -9,6 +9,7 @@ export interface CampoEvento {
   tipo: TipoCampo;
   obrigatorio?: boolean;
   unidade?: string;
+  dica?: string;    // explicação em linguagem simples, visível embaixo do campo
   opcoes?: string[];
   rotulosSimNao?: [string, string]; // [sim, não]
   mostrarSe?: (dados: Record<string, any>) => boolean;
@@ -28,14 +29,14 @@ export const EVENTOS: Record<string, ConfigEvento> = {
     nome: 'Colostragem', grupo: 'Cria e recria', categorias: ['BZF', 'BZM'],
     campos: [
       { chave: 'volume_litros', rotulo: 'Volume', tipo: 'numero', unidade: 'L' },
-      { chave: 'brix', rotulo: 'Qualidade (Brix)', tipo: 'numero', unidade: '%' },
+      { chave: 'brix', rotulo: 'Qualidade (Brix)', tipo: 'numero', unidade: '%', dica: 'Medida com o refratômetro. Quanto maior o Brix, melhor o colostro.' },
     ],
   },
   pesagem: {
     nome: 'Pesagem', grupo: 'Cria e recria', categorias: 'todas',
     campos: [
       { chave: 'peso', rotulo: 'Peso', tipo: 'numero', unidade: 'kg', obrigatorio: true },
-      { chave: 'metodo', rotulo: 'Método', tipo: 'opcoes', opcoes: ['Balança', 'Fita'] },
+      { chave: 'metodo', rotulo: 'Método', tipo: 'opcoes', opcoes: ['Balança', 'Fita'], dica: 'Fita: fita métrica de pesagem, passada em volta do peito do animal.' },
     ],
   },
   desmama: {
@@ -62,14 +63,14 @@ export const EVENTOS: Record<string, ConfigEvento> = {
     campos: [
       { chave: 'touro', rotulo: 'Touro ou sêmen', tipo: 'texto' },
       { chave: 'inseminador', rotulo: 'Inseminador', tipo: 'texto' },
-      { chave: 'protocolo', rotulo: 'Protocolo', tipo: 'opcoes', opcoes: ['IATF', 'Cio natural', 'Monta natural'] },
+      { chave: 'protocolo', rotulo: 'Protocolo', tipo: 'opcoes', opcoes: ['IATF', 'Cio natural', 'Monta natural'], dica: 'IATF: inseminação em tempo fixo, em dia marcado, sem esperar o cio. Monta natural: cobertura direto pelo touro.' },
     ],
   },
   diagnostico: {
     nome: 'Diagnóstico de prenhez', grupo: 'Reprodução', categorias: ['NVA', 'RPA', 'LAC'],
     campos: [
       { chave: 'positivo', rotulo: 'Resultado', tipo: 'simnao', obrigatorio: true, rotulosSimNao: ['Prenha', 'Vazia'] },
-      { chave: 'metodo', rotulo: 'Método', tipo: 'opcoes', opcoes: ['Ultrassom', 'Toque'] },
+      { chave: 'metodo', rotulo: 'Método', tipo: 'opcoes', opcoes: ['Ultrassom', 'Toque'], dica: 'Toque: exame manual feito pelo veterinário.' },
       { chave: 'dias_gestacao', rotulo: 'Dias de gestação estimados', tipo: 'numero', unidade: 'dias', mostrarSe: d => d.positivo === true },
     ],
   },
@@ -92,7 +93,7 @@ export const EVENTOS: Record<string, ConfigEvento> = {
     nome: 'Parto', grupo: 'Parto e lactação', categorias: ['PRE', 'NVP', 'SEC', 'LAC'],
     campos: [
       { chave: 'tipo_parto', rotulo: 'Tipo de parto', tipo: 'opcoes', opcoes: ['Normal', 'Assistido', 'Cesárea'] },
-      { chave: 'retencao_placenta', rotulo: 'Retenção de placenta?', tipo: 'simnao', rotulosSimNao: ['Sim', 'Não'] },
+      { chave: 'retencao_placenta', rotulo: 'Retenção de placenta?', tipo: 'simnao', rotulosSimNao: ['Sim', 'Não'], dica: 'Quando a placenta não sai sozinha depois do parto.' },
       { chave: 'crias', rotulo: 'Crias', tipo: 'crias' },
     ],
   },
@@ -103,16 +104,16 @@ export const EVENTOS: Record<string, ConfigEvento> = {
   secagem: {
     nome: 'Secagem', grupo: 'Parto e lactação', categorias: ['RPA', 'LAC'],
     campos: [
-      { chave: 'produto', rotulo: 'Produto de secagem', tipo: 'texto' },
+      { chave: 'produto', rotulo: 'Produto de secagem', tipo: 'texto', dica: 'Medicamento aplicado no úbere ao parar de ordenhar.' },
       { chave: 'ultima_producao', rotulo: 'Última produção', tipo: 'numero', unidade: 'L/dia' },
     ],
   },
   mastite: {
     nome: 'Mastite / CMT', grupo: 'Saúde', categorias: ['RPA', 'LAC'],
     campos: [
-      { chave: 'tipo', rotulo: 'Tipo', tipo: 'opcoes', opcoes: ['Clínica', 'Subclínica'] },
-      { chave: 'quartos', rotulo: 'Quarto(s) afetado(s)', tipo: 'texto' },
-      { chave: 'grau', rotulo: 'Grau', tipo: 'texto' },
+      { chave: 'tipo', rotulo: 'Tipo', tipo: 'opcoes', opcoes: ['Clínica', 'Subclínica'], dica: 'Clínica: dá para ver no leite ou no úbere. Subclínica: só aparece no teste (CMT, o teste da raquete).' },
+      { chave: 'quartos', rotulo: 'Quarto(s) afetado(s)', tipo: 'texto', dica: 'Cada teta é um quarto do úbere. Ex.: dianteiro esquerdo.' },
+      { chave: 'grau', rotulo: 'Grau', tipo: 'texto', dica: 'Gravidade do caso. Ex.: leve, moderada ou grave.' },
     ],
   },
   tratamento: {
@@ -121,8 +122,8 @@ export const EVENTOS: Record<string, ConfigEvento> = {
       { chave: 'diagnostico', rotulo: 'Diagnóstico', tipo: 'texto' },
       { chave: 'medicamento', rotulo: 'Medicamento', tipo: 'texto', obrigatorio: true },
       { chave: 'dose', rotulo: 'Dose', tipo: 'texto' },
-      { chave: 'carencia_leite_dias', rotulo: 'Carência do leite', tipo: 'numero', unidade: 'dias' },
-      { chave: 'carencia_carne_dias', rotulo: 'Carência da carne', tipo: 'numero', unidade: 'dias' },
+      { chave: 'carencia_leite_dias', rotulo: 'Carência do leite', tipo: 'numero', unidade: 'dias', dica: 'Dias depois do tratamento em que o leite não pode ser vendido. Veja na bula.' },
+      { chave: 'carencia_carne_dias', rotulo: 'Carência da carne', tipo: 'numero', unidade: 'dias', dica: 'Dias depois do tratamento em que o animal não pode ir para o abate. Veja na bula.' },
     ],
   },
   vacinacao: {
@@ -130,7 +131,7 @@ export const EVENTOS: Record<string, ConfigEvento> = {
     campos: [
       { chave: 'manejo_id', rotulo: 'Item do calendário sanitário', tipo: 'manejo' },
       { chave: 'vacina', rotulo: 'Vacina (se não estiver no calendário)', tipo: 'texto', mostrarSe: d => !d.manejo_id },
-      { chave: 'lote_fabricante', rotulo: 'Lote / fabricante', tipo: 'texto' },
+      { chave: 'lote_fabricante', rotulo: 'Lote do frasco / fabricante', tipo: 'texto', dica: 'Dados da embalagem da vacina. Não é o lote de animais.' },
       { chave: 'dose', rotulo: 'Dose', tipo: 'texto' },
     ],
   },
@@ -146,12 +147,12 @@ export const EVENTOS: Record<string, ConfigEvento> = {
     nome: 'Casqueamento', grupo: 'Saúde', categorias: ['LAC', 'SEC', 'PRE', 'RPA'],
     campos: [
       { chave: 'lesao', rotulo: 'Lesão encontrada', tipo: 'texto' },
-      { chave: 'membro', rotulo: 'Membro', tipo: 'texto' },
+      { chave: 'membro', rotulo: 'Membro', tipo: 'texto', dica: 'Qual pata. Ex.: traseira direita.' },
     ],
   },
   escore_corporal: {
     nome: 'Escore de condição corporal', grupo: 'Saúde', categorias: FEMEAS_ADULTAS,
-    campos: [{ chave: 'escore', rotulo: 'Escore (1 a 5)', tipo: 'numero', obrigatorio: true }],
+    campos: [{ chave: 'escore', rotulo: 'Escore (1 a 5)', tipo: 'numero', obrigatorio: true, dica: '1 = muito magra · 5 = muito gorda.' }],
   },
   troca_lote: {
     nome: 'Troca de lote', grupo: 'Manejo e saída', categorias: 'todas',

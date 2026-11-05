@@ -1,7 +1,72 @@
-import React from 'react';
-import { Loader2, X } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { createRoot } from 'react-dom/client';
+import { CircleHelp, Loader2, X } from 'lucide-react';
+import { TextoAjuda } from '../services/ajuda';
 
 // Peças visuais reaproveitadas em todas as telas (identidade AleEdu: marinho #050D21 + menta #56E39F)
+
+// Ponto de interrogação: abre um balão ao tocar (no curral não existe "passar o mouse").
+// O balão vai para o body para não ser cortado por janelas e tabelas com rolagem.
+export const Ajuda: React.FC<{ item: TextoAjuda; escuro?: boolean }> = ({ item, escuro }) => {
+  const [aberta, setAberta] = useState(false);
+  const [posicao, setPosicao] = useState<{ left: number; top: number } | null>(null);
+  const botao = useRef<HTMLButtonElement>(null);
+  const balao = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!aberta || !botao.current || !balao.current) { setPosicao(null); return; }
+    const b = botao.current.getBoundingClientRect();
+    const { width, height } = balao.current.getBoundingClientRect();
+    const margem = 12;
+    const abaixo = b.bottom + 8;
+    setPosicao({
+      left: Math.min(Math.max(b.left + b.width / 2 - width / 2, margem), window.innerWidth - width - margem),
+      top: abaixo + height + margem <= window.innerHeight ? abaixo : Math.max(b.top - height - 8, margem),
+    });
+  }, [aberta]);
+
+  useEffect(() => {
+    if (!aberta) return;
+    const fechar = () => setAberta(false);
+    const dentro = (alvo: EventTarget | null) => alvo instanceof Node && (balao.current?.contains(alvo) || botao.current?.contains(alvo));
+    const aoTocar = (e: PointerEvent) => { if (!dentro(e.target)) fechar(); };
+    const aoRolar = (e: Event) => { if (!dentro(e.target)) fechar(); };
+    const aoTeclar = (e: KeyboardEvent) => { if (e.key === 'Escape') fechar(); };
+    document.addEventListener('pointerdown', aoTocar);
+    document.addEventListener('keydown', aoTeclar);
+    window.addEventListener('scroll', aoRolar, true);
+    window.addEventListener('resize', fechar);
+    return () => {
+      document.removeEventListener('pointerdown', aoTocar);
+      document.removeEventListener('keydown', aoTeclar);
+      window.removeEventListener('scroll', aoRolar, true);
+      window.removeEventListener('resize', fechar);
+    };
+  }, [aberta]);
+
+  return (
+    <>
+      <button ref={botao} type="button" aria-label={`Ajuda: ${item.titulo}`} aria-expanded={aberta}
+        onClick={e => { e.preventDefault(); e.stopPropagation(); setAberta(!aberta); }}
+        className={`inline-flex shrink-0 align-middle p-1 -m-1 rounded-full transition ${escuro ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-[#050D21]'}`}>
+        <CircleHelp size={15} />
+      </button>
+      {aberta && createPortal(
+        <div ref={balao} role="dialog" aria-label={item.titulo} onClick={e => e.stopPropagation()}
+          style={{ left: posicao?.left ?? 0, top: posicao?.top ?? 0, visibility: posicao ? 'visible' : 'hidden' }}
+          className="fixed z-[70] w-[min(20rem,calc(100vw-1.5rem))] max-h-[60vh] overflow-y-auto bg-white rounded-xl border border-gray-200 shadow-xl p-4 text-left normal-case tracking-normal">
+          <div className="flex items-start justify-between gap-3 mb-1">
+            <p className="font-bold text-sm text-gray-900">{item.titulo}</p>
+            <button type="button" onClick={() => setAberta(false)} className="p-1 -m-1 text-gray-400 hover:text-gray-700 rounded-full" aria-label="Fechar ajuda"><X size={16} /></button>
+          </div>
+          <p className="text-sm font-normal text-gray-600 whitespace-pre-line">{item.texto}</p>
+        </div>,
+        document.body,
+      )}
+    </>
+  );
+};
 
 type Variante = 'primario' | 'escuro' | 'secundario' | 'perigo' | 'fantasma';
 
@@ -26,9 +91,9 @@ export const Botao: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
   </button>
 );
 
-export const Campo: React.FC<{ rotulo: string; dica?: string; children: React.ReactNode; className?: string }> = ({ rotulo, dica, children, className = '' }) => (
+export const Campo: React.FC<{ rotulo: string; dica?: string; ajuda?: TextoAjuda; children: React.ReactNode; className?: string }> = ({ rotulo, dica, ajuda, children, className = '' }) => (
   <label className={`block ${className}`}>
-    <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{rotulo}</span>
+    <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{rotulo}{ajuda && <Ajuda item={ajuda} />}</span>
     {children}
     {dica && <span className="block text-xs text-gray-400 mt-1">{dica}</span>}
   </label>
@@ -68,7 +133,7 @@ export const Selo: React.FC<{ children: React.ReactNode; cor?: 'verde' | 'cinza'
   return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${cores[cor]}`}>{children}</span>;
 };
 
-export const Janela: React.FC<{ titulo: string; aberta: boolean; aoFechar: () => void; children: React.ReactNode; rodape?: React.ReactNode }> = ({ titulo, aberta, aoFechar, children, rodape }) => {
+export const Janela: React.FC<{ titulo: string; aberta: boolean; aoFechar: () => void; children: React.ReactNode; rodape?: React.ReactNode; ajuda?: TextoAjuda }> = ({ titulo, aberta, aoFechar, children, rodape, ajuda }) => {
   if (!aberta) return null;
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4" onClick={aoFechar}>
@@ -77,7 +142,7 @@ export const Janela: React.FC<{ titulo: string; aberta: boolean; aoFechar: () =>
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="font-bold text-gray-900">{titulo}</h3>
+          <h3 className="font-bold text-gray-900 flex items-center gap-2">{titulo}{ajuda && <Ajuda item={ajuda} />}</h3>
           <button onClick={aoFechar} className="p-1 text-gray-400 hover:text-gray-700 rounded-full" aria-label="Fechar"><X size={22} /></button>
         </div>
         <div className="p-5 overflow-y-auto space-y-4">{children}</div>
@@ -86,6 +151,29 @@ export const Janela: React.FC<{ titulo: string; aberta: boolean; aoFechar: () =>
     </div>
   );
 };
+
+// Pergunta "tem certeza?" na própria tela. Substitui o confirm() do navegador, que alguns ambientes bloqueiam
+// sem mostrar nada (o botão parece não fazer efeito). Uso: if (!(await confirmar('Excluir?'))) return;
+export const confirmar = (mensagem: string, opcoes: { botao?: string; perigo?: boolean } = {}) => new Promise<boolean>(resolve => {
+  const div = document.createElement('div');
+  document.body.appendChild(div);
+  const raiz = createRoot(div);
+  const responder = (resposta: boolean) => {
+    raiz.unmount();
+    div.remove();
+    resolve(resposta);
+  };
+  raiz.render(
+    <Janela titulo="Confirmar" aberta aoFechar={() => responder(false)} rodape={
+      <>
+        <Botao variante="secundario" onClick={() => responder(false)}>Cancelar</Botao>
+        <Botao variante={opcoes.perigo ? 'perigo' : 'primario'} onClick={() => responder(true)}>{opcoes.botao || 'Confirmar'}</Botao>
+      </>
+    }>
+      <p className="text-sm text-gray-700">{mensagem}</p>
+    </Janela>
+  );
+});
 
 export const Vazio: React.FC<{ icone: React.ReactNode; titulo: string; texto?: string; acao?: React.ReactNode }> = ({ icone, titulo, texto, acao }) => (
   <div className="text-center py-12 px-6">
@@ -102,10 +190,10 @@ export const Carregando: React.FC<{ texto?: string }> = ({ texto = 'Carregando..
   </div>
 );
 
-export const TituloSecao: React.FC<{ titulo: string; descricao?: string; acao?: React.ReactNode }> = ({ titulo, descricao, acao }) => (
+export const TituloSecao: React.FC<{ titulo: string; descricao?: string; acao?: React.ReactNode; ajuda?: TextoAjuda }> = ({ titulo, descricao, acao, ajuda }) => (
   <div className="flex items-start justify-between gap-3 mb-3">
     <div>
-      <h2 className="font-bold text-gray-900">{titulo}</h2>
+      <h2 className="font-bold text-gray-900 flex items-center gap-2">{titulo}{ajuda && <Ajuda item={ajuda} />}</h2>
       {descricao && <p className="text-sm text-gray-500 mt-0.5">{descricao}</p>}
     </div>
     {acao}

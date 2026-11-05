@@ -4,7 +4,8 @@ import { Link2, RefreshCw, AlertTriangle, CheckCircle2, Package, PlugZap } from 
 import { api } from '../services/api';
 import { ClienteGestao, Fazenda, InsumoGestao, IntegracaoStatus } from '../types';
 import { data, numero } from '../services/formato';
-import { Botao, Campo, Selecao, Entrada, Cartao, Selo, Carregando, TituloSecao } from './ui';
+import { AJUDA } from '../services/ajuda';
+import { Ajuda, Botao, Campo, Selecao, Entrada, Cartao, Selo, Carregando, TituloSecao } from './ui';
 
 interface Props {
   fazenda: Fazenda;
@@ -112,7 +113,7 @@ export const IntegracaoPanel: React.FC<Props> = ({ fazenda, aoMudar }) => {
       <Cartao className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-semibold text-gray-900">Lançamentos enviados</p>
+            <p className="font-semibold text-gray-900 flex items-center gap-2">Lançamentos enviados <Ajuda item={AJUDA.sincronizar} /></p>
             <p className="text-sm text-gray-500 mt-0.5">{enviados} no financeiro · {status.pendencias.length} aguardando</p>
           </div>
           <Botao variante="escuro" icone={<RefreshCw size={16} />} onClick={sincronizar} carregando={ocupado}>Sincronizar agora</Botao>

@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { LogOut, UserCircle2, Beef, BellRing } from 'lucide-react';
+import { LogOut, UserCircle2, Beef, BellRing, Milk } from 'lucide-react';
 import { FuncionarioResumo } from '../types';
-import { Cartao, Vazio } from './ui';
+import { AJUDA } from '../services/ajuda';
+import { navegar, useRota } from '../services/rota';
+import { Ajuda, Cartao, Vazio } from './ui';
 import { AppShell, TituloPagina, ItemMenu } from './AppShell';
 import { RebanhoArea } from './RebanhoArea';
+import { SaidaLeitePanel } from './SaidaLeitePanel';
 
 const CHAVE_FUNCIONARIO = 'rebanho_funcionario_id';
 
 const MENU: ItemMenu[] = [
   { id: 'alertas', rotulo: 'Alertas', icone: BellRing },
   { id: 'rebanho', rotulo: 'Rebanho', icone: Beef },
+  { id: 'leite', rotulo: 'Leite', icone: Milk },
 ];
 
 interface FuncionarioHomeProps {
@@ -25,7 +29,9 @@ export const FuncionarioHome: React.FC<FuncionarioHomeProps> = ({ fazenda, funci
     const salvo = Number(localStorage.getItem(CHAVE_FUNCIONARIO));
     return funcionarios.some(f => f.id === salvo) ? salvo : null;
   });
-  const [pagina, setPagina] = useState<'alertas' | 'rebanho'>('alertas');
+  const rota = useRota();
+  const pagina = rota[0] === 'rebanho' || rota[0] === 'leite' ? rota[0] : 'alertas';
+  const animalId = rota[1] === 'animal' && Number(rota[2]) > 0 ? Number(rota[2]) : null;
   const selecionado = funcionarios.find(f => f.id === selecionadoId);
 
   const escolher = (id: number | null) => {
@@ -45,14 +51,25 @@ export const FuncionarioHome: React.FC<FuncionarioHomeProps> = ({ fazenda, funci
         titulo={fazenda.nome}
         itens={MENU}
         ativo={pagina}
-        aoNavegar={(id) => setPagina(id as 'alertas' | 'rebanho')}
+        aoNavegar={(id) => navegar(`/${id}`)}
         usuario={{ nome: selecionado.nome, detalhe: selecionado.funcao || 'Acesso da fazenda' }}
         aoSair={sair}
         trocar={{ rotulo: `Lançando como ${selecionado.nome} · trocar`, acao: () => escolher(null) }}
       >
-        <TituloPagina titulo={pagina === 'alertas' ? 'Alertas do dia' : 'Rebanho'}
-          descricao={pagina === 'alertas' ? `Olá, ${selecionado.nome}! Isto é o que precisa ser feito hoje.` : undefined} />
-        <RebanhoArea fazendaId={fazenda.id} visao={pagina} ehGestor={false} funcionarioId={selecionado.id} />
+        {pagina === 'leite' ? (
+          <>
+            <TituloPagina titulo="Saída de leite" descricao="Quanto o caminhão recolheu em cada dia" ajuda={AJUDA.saidaLeite} />
+            <SaidaLeitePanel fazendaId={fazenda.id} funcionarioId={selecionado.id} />
+          </>
+        ) : (
+          <>
+            <TituloPagina titulo={pagina === 'alertas' ? 'Alertas do dia' : 'Rebanho'} ajuda={pagina === 'alertas' ? AJUDA.alertas : AJUDA.animais}
+              descricao={pagina === 'alertas' ? `Olá, ${selecionado.nome}! Isto é o que precisa ser feito hoje.` : undefined} />
+            <RebanhoArea fazendaId={fazenda.id} visao={pagina} ehGestor={false} funcionarioId={selecionado.id} animalId={animalId}
+              aoAbrirAnimal={(id) => navegar(`/${pagina}/animal/${id}`)}
+              aoVoltarDaFicha={(fichaSumiu) => navegar(`/${pagina}`, { substituir: fichaSumiu })} />
+          </>
+        )}
       </AppShell>
     );
   }
@@ -72,7 +89,7 @@ export const FuncionarioHome: React.FC<FuncionarioHomeProps> = ({ fazenda, funci
 
       <main className="max-w-2xl mx-auto px-4 -mt-4 pb-10">
         <Cartao className="p-5">
-          <h2 className="font-bold text-gray-900">Quem é você?</h2>
+          <h2 className="font-bold text-gray-900 flex items-center gap-2">Quem é você? <Ajuda item={AJUDA.quemEVoce} /></h2>
           <p className="text-sm text-gray-500 mt-0.5 mb-4">Escolha seu nome. Ele fica registrado em tudo o que você lançar.</p>
           {funcionarios.length === 0 ? (
             <Vazio icone={<UserCircle2 />} titulo="Nenhum funcionário cadastrado" texto="Peça ao consultor para cadastrar a equipe da fazenda." />

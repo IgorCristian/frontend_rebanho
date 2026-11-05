@@ -4,7 +4,8 @@ import { AlertTriangle, Download, Layers, Package, Pencil, Plus, Salad, Trash2 }
 import { api } from '../services/api';
 import { DietaItem, InsumoGestao, OrigemPreco, RelatorioDietas } from '../types';
 import { numero } from '../services/formato';
-import { Botao, Campo, Entrada, Selecao, Cartao, Selo, Vazio, Carregando, Janela } from './ui';
+import { AJUDA, TextoAjuda } from '../services/ajuda';
+import { Ajuda, Botao, Campo, Entrada, Selecao, Cartao, Selo, Vazio, Carregando, Janela } from './ui';
 
 export type VisaoCustos = 'dietas' | 'insumos' | 'resumo';
 
@@ -16,7 +17,7 @@ const ORIGEM: Record<string, string> = { custo_medio: 'custo médio do estoque',
 const KG_CONHECIDO: Record<string, number> = { KG: 1, KGS: 1, QUILO: 1, G: 0.001, T: 1000, TN: 1000, TON: 1000, TONELADA: 1000 };
 const kgConhecido = (unidade: string | null) => KG_CONHECIDO[(unidade || '').trim().toUpperCase()];
 
-const baixarCsv = (nome: string, linhas: any[][]) => {
+export const baixarCsv = (nome: string, linhas: any[][]) => {
   // Números com vírgula decimal, para o Excel em português
   const celula = (v: any) => `"${typeof v === 'number' ? String(v).replace('.', ',') : String(v ?? '').replace(/"/g, '""')}"`;
   const csv = '﻿' + linhas.map(l => l.map(celula).join(';')).join('\n');
@@ -28,8 +29,8 @@ const baixarCsv = (nome: string, linhas: any[][]) => {
   URL.revokeObjectURL(url);
 };
 
-const Th: React.FC<{ children?: React.ReactNode; esquerda?: boolean }> = ({ children, esquerda }) => (
-  <th className={`${esquerda ? 'text-left' : 'text-right'} px-3 py-2`}>{children}</th>
+const Th: React.FC<{ children?: React.ReactNode; esquerda?: boolean; ajuda?: TextoAjuda }> = ({ children, esquerda, ajuda }) => (
+  <th className={`${esquerda ? 'text-left' : 'text-right'} px-3 py-2`}>{children}{ajuda && <span className="ml-1.5"><Ajuda item={ajuda} /></span>}</th>
 );
 const Td: React.FC<{ children?: React.ReactNode; esquerda?: boolean; forte?: boolean; className?: string }> = ({ children, esquerda, forte, className = '' }) => (
   <td className={`px-3 py-2 ${esquerda ? '' : 'text-right'} ${forte ? 'font-bold' : ''} ${className}`}>{children}</td>
@@ -142,7 +143,7 @@ export const DietasRelatorios: React.FC<{ fazendaId: number; visao: VisaoCustos;
           <Cartao className="overflow-x-auto">
             <table className="w-full text-sm whitespace-nowrap">
               <thead className="text-xs text-gray-500 uppercase bg-gray-50">
-                <tr><Th esquerda>Insumo</Th><Th>Preço no Gestão</Th><Th>R$/kg</Th><Th>Consumo/dia</Th><Th>Custo/dia</Th><Th>Custo/mês</Th><Th>Estoque</Th><Th>Dura</Th></tr>
+                <tr><Th esquerda>Insumo</Th><Th ajuda={AJUDA.precoInsumo}>Preço no Gestão</Th><Th>R$/kg</Th><Th>Consumo/dia</Th><Th>Custo/dia</Th><Th>Custo/mês</Th><Th>Estoque</Th><Th ajuda={AJUDA.duraEstoque}>Dura</Th></tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {r.insumos.map(i => (
@@ -186,7 +187,7 @@ export const DietasRelatorios: React.FC<{ fazendaId: number; visao: VisaoCustos;
         <Cartao className="overflow-x-auto">
           <table className="w-full text-sm whitespace-nowrap">
             <thead className="text-xs text-gray-500 uppercase bg-gray-50">
-              <tr><Th esquerda>Lote</Th><Th>Animais</Th><Th>Come</Th><Th>Custa</Th><Th>Produz</Th><Th>Receita</Th><Th>Sobra/dia</Th><Th>Sobra/mês</Th><Th>Dieta por litro</Th></tr>
+              <tr><Th esquerda>Lote</Th><Th>Animais</Th><Th>Come</Th><Th>Custa</Th><Th ajuda={AJUDA.produzLote}>Produz</Th><Th>Receita</Th><Th ajuda={AJUDA.sobraLote}>Sobra/dia</Th><Th>Sobra/mês</Th><Th ajuda={AJUDA.dietaPorLitro}>Dieta por litro</Th></tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {r.resumo.map(l => (
@@ -293,7 +294,7 @@ const EditarDietaJanela: React.FC<{ fazendaId: number; lote: { id: number; nome:
                 <div className="grid grid-cols-2 gap-2">
                   <Campo rotulo="kg/animal/dia"><Entrada inputMode="decimal" value={l.kg_animal_dia} onChange={e => mudar(n, 'kg_animal_dia', e.target.value)} /></Campo>
                   {pedeFator && (
-                    <Campo rotulo={`kg em 1 ${insumo!.unidade || 'unidade'}`} dica="Ex.: saco de 40 kg = 40">
+                    <Campo rotulo={`kg em 1 ${insumo!.unidade || 'unidade'}`} dica="Ex.: saco de 40 kg = 40" ajuda={AJUDA.kgPorUnidade}>
                       <Entrada inputMode="decimal" value={l.kg_por_unidade} onChange={e => mudar(n, 'kg_por_unidade', e.target.value)} />
                     </Campo>
                   )}

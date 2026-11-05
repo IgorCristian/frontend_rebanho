@@ -4,7 +4,8 @@ import { BellRing, CheckCircle2, ChevronRight } from 'lucide-react';
 import { api } from '../services/api';
 import { AlertaDoDia, CATEGORIAS, Prioridade } from '../types';
 import { COR_PRIORIDADE, NOME_PRIORIDADE } from '../services/formato';
-import { Cartao, Vazio, Carregando } from './ui';
+import { AJUDA_ALERTA } from '../services/ajuda';
+import { Ajuda, Cartao, Vazio, Carregando } from './ui';
 
 interface Props {
   fazendaId: number;
@@ -60,6 +61,7 @@ export const AlertasPanel: React.FC<Props> = ({ fazendaId, aoAbrirAnimal }) => {
             <BellRing size={16} className={g.prioridade === 'alta' ? 'text-red-500' : g.prioridade === 'media' ? 'text-amber-500' : 'text-gray-400'} />
             {g.titulo}
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${COR_PRIORIDADE[g.prioridade]}`}>{NOME_PRIORIDADE[g.prioridade]}</span>
+            {AJUDA_ALERTA[g.itens[0].codigo] && <Ajuda item={{ titulo: g.titulo, texto: AJUDA_ALERTA[g.itens[0].codigo] }} />}
           </h3>
           <Cartao className="divide-y divide-gray-100">
             {g.itens.map((a, i) => (

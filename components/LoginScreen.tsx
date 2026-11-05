@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, KeyRound, Hash, Loader2, ArrowRight } from 'lucide-react';
 import { api } from '../services/api';
 import { Sessao } from '../types';
+import { AJUDA } from '../services/ajuda';
+import { Ajuda } from './ui';
 
 interface LoginScreenProps {
   aoEntrar: (token: string, sessao: Sessao) => void;
@@ -58,6 +60,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ aoEntrar }) => {
           <h2 className="text-2xl font-bold text-white tracking-wide text-center mt-4">Bem-vindo</h2>
           <p className="text-gray-400 text-sm mt-1 text-center">
             {modo === 'usuario' ? 'Entre com seu e-mail e senha' : 'Entre com o código da fazenda e o PIN'}
+            <span className="ml-1.5"><Ajuda item={AJUDA.login} escuro /></span>
           </p>
         </div>
 

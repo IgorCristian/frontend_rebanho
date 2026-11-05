@@ -11,6 +11,8 @@ export const PAPEIS_LABEL: Record<Papel, string> = {
 export const PAPEIS_VINCULADOS: Papel[] = ['veterinario', 'inseminador'];
 
 export const RACAS = ['Holandesa', 'Girolando', 'Jersey', 'Gir'];
+// Sugestões do campo Grau de sangue (o campo continua livre para outros cruzamentos)
+export const GRAUS_SANGUE = ['1/4 Holandês e 3/4 Gir', '3/8 Holandês e 5/8 Gir', '1/2 Holandês e 1/2 Gir', '5/8 Holandês e 3/8 Gir', '3/4 Holandês e 1/4 Gir', '7/8 Holandês e 1/8 Gir'];
 
 export const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR',
   'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
@@ -339,3 +341,49 @@ export interface ResumoLote {
   sobra_mes: number | null;
   custo_litro: number | null;
 }
+
+// ---------- Saída de leite (o que o caminhão recolheu no dia, para conferir com a folha do leite) ----------
+
+export interface SaidaLeite {
+  data: string;
+  litros: number;
+  observacao: string | null;
+  lancado_por: string | null;
+  corrigido: boolean;
+  pode_alterar: boolean;
+}
+
+export interface ResumoSaidaLeite {
+  mes: string;  // AAAA-MM
+  registros: SaidaLeite[];
+  total_litros: number;
+  dias_registrados: number;
+  media_dia: number | null;
+  dias_sem_registro: string[];
+  pode_lancar: boolean;
+}
+
+// ---------- Plantações (sincronizadas com as lavouras do Gestão, quando a fazenda é vinculada) ----------
+
+export interface CulturaInfo { id: string; nome: string; ciclo_dias: number }
+
+// status, dias_para_corte e progresso vêm calculados das datas (backend_rebanho/routes/plantacao_routes.py)
+export interface Plantacao {
+  id: number;
+  nome: string;
+  cultura: string | null;
+  variedade: string | null;
+  hectares: number | null;
+  data_plantio: string;
+  previsao_corte: string | null;
+  data_colheita: string | null;
+  toneladas: number | null;
+  status: 'plantada' | 'ponto_de_corte' | 'colhida';
+  dias_para_corte: number | null;
+  progresso: number | null;
+  gestao_producao_id: number | null;
+  sync_status: 'pendente' | 'enviado' | 'erro';
+  sync_erro: string | null;
+}
+
+export interface SituacaoPlantacoesGestao { vinculada: boolean; erro: string | null }

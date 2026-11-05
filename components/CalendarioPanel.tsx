@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { Plus, Pencil, Syringe, BellRing, BellOff } from 'lucide-react';
 import { api } from '../services/api';
 import { CATEGORIAS, ManejoSanitario } from '../types';
-import { Botao, Campo, Entrada, Selecao, AreaTexto, Cartao, Selo, Janela, Carregando, TituloSecao } from './ui';
+import { AJUDA } from '../services/ajuda';
+import { Ajuda, Botao, Campo, Entrada, Selecao, AreaTexto, Cartao, Selo, Janela, Carregando, TituloSecao } from './ui';
 
 interface Props {
   fazendaId: number;
@@ -119,7 +120,7 @@ export const CalendarioPanel: React.FC<Props> = ({ fazendaId, podeEditar }) => {
             </Campo>
 
             <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 space-y-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase">Quando avisar (deixe em branco para não gerar alerta)</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1.5">Quando avisar (deixe em branco para não gerar alerta) <Ajuda item={AJUDA.quandoAvisar} /></p>
               <label className="flex items-center gap-2 text-sm text-gray-700">
                 <input type="checkbox" className="w-4 h-4 accent-[#56E39F]" checked={!!editando.usar_p29} onChange={e => set('usar_p29', e.target.checked)} />
                 Começar na idade do parâmetro P29 (brucelose)

@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { RotateCcw, Save } from 'lucide-react';
 import { api } from '../services/api';
 import { MetaIndicador } from '../types';
-import { Botao, Cartao, Selo, Carregando, TituloSecao } from './ui';
+import { AJUDA_INDICADOR } from '../services/ajuda';
+import { Ajuda, Botao, Cartao, Selo, Carregando, TituloSecao } from './ui';
 
 interface Props {
   fazendaId: number;
@@ -72,7 +73,9 @@ export const MetasPanel: React.FC<Props> = ({ fazendaId, podeEditar }) => {
               <div key={m.codigo} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 text-sm flex flex-wrap items-center gap-2">
-                    {m.nome} {m.alterada && <Selo cor="azul">Ajustada</Selo>}
+                    {m.nome}
+                    {AJUDA_INDICADOR[m.codigo] && <Ajuda item={{ titulo: m.nome, texto: AJUDA_INDICADOR[m.codigo] }} />}
+                    {m.alterada && <Selo cor="azul">Ajustada</Selo>}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {m.sentido === 'menor' ? 'Quanto menor, melhor' : m.sentido === 'maior' ? 'Quanto maior, melhor' : 'Bom perto da meta'} · Padrão: {paraTela(m, m.padrao)} {m.unidade}

@@ -11,12 +11,14 @@ interface Props {
   visao: 'rebanho' | 'alertas';
   ehGestor: boolean;
   funcionarioId?: number;
+  animalId: number | null;                   // ficha aberta: vem do endereço da tela
+  aoAbrirAnimal: (animalId: number) => void;
+  aoVoltarDaFicha: (fichaSumiu?: boolean) => void;
 }
 
 // Lista do rebanho / alertas do dia + ficha do animal. Usado pelo consultor/equipe e pelo funcionário.
-export const RebanhoArea: React.FC<Props> = ({ fazendaId, visao, ehGestor, funcionarioId }) => {
+export const RebanhoArea: React.FC<Props> = ({ fazendaId, visao, ehGestor, funcionarioId, animalId, aoAbrirAnimal, aoVoltarDaFicha }) => {
   const [apoio, setApoio] = useState<ApoioLancamento | null>(null);
-  const [animalId, setAnimalId] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([api.tiposEvento(fazendaId), api.listarLotes(fazendaId), api.listarCalendario(fazendaId)])
@@ -24,16 +26,13 @@ export const RebanhoArea: React.FC<Props> = ({ fazendaId, visao, ehGestor, funci
       .catch(() => setApoio({ tipos: [], perfil: null, lotes: [], calendario: [], funcionarioId, ehGestor }));
   }, [fazendaId, funcionarioId, ehGestor]);
 
-  // Trocar de aba volta para a lista
-  useEffect(() => setAnimalId(null), [visao]);
-
   if (!apoio) return <Carregando />;
 
   if (animalId) {
     return <AnimalFicha key={animalId} fazendaId={fazendaId} animalId={animalId} apoio={apoio}
-      aoVoltar={() => setAnimalId(null)} aoAbrirAnimal={setAnimalId} />;
+      aoVoltar={aoVoltarDaFicha} aoAbrirAnimal={aoAbrirAnimal} />;
   }
   return visao === 'alertas'
-    ? <AlertasPanel fazendaId={fazendaId} aoAbrirAnimal={setAnimalId} />
-    : <RebanhoPanel fazendaId={fazendaId} podeCadastrar={ehGestor} lotes={apoio.lotes} aoAbrirAnimal={setAnimalId} />;
+    ? <AlertasPanel fazendaId={fazendaId} aoAbrirAnimal={aoAbrirAnimal} />
+    : <RebanhoPanel fazendaId={fazendaId} podeCadastrar={ehGestor} lotes={apoio.lotes} aoAbrirAnimal={aoAbrirAnimal} />;
 };

@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { Plus, Tractor, MapPin, ChevronRight, Search } from 'lucide-react';
 import { api } from '../services/api';
 import { Fazenda, Usuario, RACAS, UFS } from '../types';
-import { Botao, Campo, Entrada, Selecao, Cartao, Selo, Janela, Vazio, Carregando } from './ui';
+import { AJUDA } from '../services/ajuda';
+import { Ajuda, Botao, Campo, Entrada, Selecao, Cartao, Selo, Janela, Vazio, Carregando } from './ui';
 
 interface FazendasListProps {
   usuario: Usuario;
@@ -35,7 +36,7 @@ export const FazendasList: React.FC<FazendasListProps> = ({ usuario, aoAbrir }) 
     <div className="space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fazendas</h1>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">Fazendas <Ajuda item={AJUDA.fazendas} /></h1>
           <p className="text-sm text-gray-500">
             {usuario.papel === 'admin' ? 'Todas as fazendas do sistema' :
               usuario.papel === 'consultor' ? 'Fazendas que você acompanha' : 'Fazendas em que você foi incluído'}

@@ -4,7 +4,14 @@ import { Target } from 'lucide-react';
 import { api } from '../services/api';
 import { Indicador } from '../types';
 import { valorIndicador, COR_SITUACAO, NOME_SITUACAO } from '../services/formato';
-import { Cartao, Carregando } from './ui';
+import { AJUDA_INDICADOR } from '../services/ajuda';
+import { Ajuda, Cartao, Carregando } from './ui';
+
+// O texto fixo do indicador + como ele é calculado e de onde veio o número desta fazenda
+const explicacao = (i: Indicador) => ({
+  titulo: i.nome,
+  texto: [AJUDA_INDICADOR[i.codigo], `Como é calculado: ${i.como}.`, `Nesta fazenda: ${i.base}.`].filter(Boolean).join('\n\n'),
+});
 
 // Indicadores do rebanho (aba INDICADORES da planilha) comparados com a meta da fazenda
 export const IndicadoresPanel: React.FC<{ fazendaId: number }> = ({ fazendaId }) => {
@@ -42,7 +49,7 @@ export const IndicadoresPanel: React.FC<{ fazendaId: number }> = ({ fazendaId })
             {lista.map(i => (
               <Cartao key={i.codigo} className="p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-gray-900 text-sm">{i.nome}</p>
+                  <p className="font-semibold text-gray-900 text-sm">{i.nome}<span className="ml-1.5"><Ajuda item={explicacao(i)} /></span></p>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${COR_SITUACAO[i.situacao]}`}>{NOME_SITUACAO[i.situacao]}</span>
                 </div>
                 <p className="text-2xl font-bold text-[#050D21] mt-2">{valorIndicador(i.valor, i.unidade)}</p>

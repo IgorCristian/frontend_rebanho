@@ -34,6 +34,15 @@ export const diasAte = (iso?: string | null) => {
   return Math.round((alvo.getTime() - hoje.getTime()) / 86400000);
 };
 
+// Traduz a notação do Girolando: "3/4 HG" = 3/4 Holandês e 1/4 Gir. Outros textos devolvem null.
+export const traduzirGrauSangue = (texto?: string | null) => {
+  const m = (texto || '').trim().match(/^(\d+)\s*\/\s*(\d+)\s*HG$/i);
+  if (!m) return null;
+  const [parte, total] = [Number(m[1]), Number(m[2])];
+  if (parte <= 0 || parte >= total) return null;
+  return `${parte}/${total} Holandês e ${total - parte}/${total} Gir`;
+};
+
 export const SITUACAO_REPRODUTIVA: Record<string, string> = {
   nao_coberta: 'Não coberta',
   aguardando_diagnostico: 'Aguardando diagnóstico',

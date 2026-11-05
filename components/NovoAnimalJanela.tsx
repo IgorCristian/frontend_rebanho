@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../services/api';
-import { CATEGORIAS, CATEGORIAS_POR_SEXO, Lote, RACAS } from '../types';
-import { hojeISO } from '../services/formato';
-import { Botao, Campo, Entrada, Selecao, Janela } from './ui';
+import { CATEGORIAS, CATEGORIAS_POR_SEXO, GRAUS_SANGUE, Lote, RACAS } from '../types';
+import { hojeISO, traduzirGrauSangue } from '../services/formato';
+import { AJUDA } from '../services/ajuda';
+import { Ajuda, Botao, Campo, Entrada, Selecao, Janela } from './ui';
+
+// Usado também na correção de cadastro. "3/4 HG" digitado aparece traduzido logo abaixo.
+export const CampoGrauSangue: React.FC<{ valor: string; aoMudar: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ valor, aoMudar }) => {
+  const traducao = traduzirGrauSangue(valor);
+  return (
+    <Campo rotulo="Grau de sangue" ajuda={AJUDA.grauSangue}
+      dica={traducao ? `Quer dizer: ${traducao}.` : 'Quanto o animal tem de cada raça, se for mestiço. Se não souber, deixe em branco.'}>
+      <Entrada list="graus-sangue" value={valor} onChange={aoMudar} placeholder="Ex.: 3/4 Holandês e 1/4 Gir" />
+      <datalist id="graus-sangue">{GRAUS_SANGUE.map(g => <option key={g} value={g} />)}</datalist>
+    </Campo>
+  );
+};
 
 interface Props {
   aberta: boolean;
@@ -91,7 +104,7 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
       </>
     }>
       <div className="grid grid-cols-2 gap-3">
-        <Campo rotulo="Brinco *"><Entrada autoFocus value={f.brinco} onChange={set('brinco')} placeholder="Ex.: 1023" /></Campo>
+        <Campo rotulo="Brinco *" dica="Número na orelha do animal."><Entrada autoFocus value={f.brinco} onChange={set('brinco')} placeholder="Ex.: 1023" /></Campo>
         <Campo rotulo="Nome"><Entrada value={f.nome} onChange={set('nome')} placeholder="Ex.: Mimosa" /></Campo>
       </div>
 
@@ -106,15 +119,13 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
         </div>
       </Campo>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Campo rotulo="Raça">
-          <Entrada list="racas" value={f.raca} onChange={set('raca')} placeholder="Ex.: Girolando" />
-          <datalist id="racas">{RACAS.map(r => <option key={r} value={r} />)}</datalist>
-        </Campo>
-        <Campo rotulo="Grau de sangue"><Entrada value={f.grau_sangue} onChange={set('grau_sangue')} placeholder="Ex.: 3/4 HG" /></Campo>
-      </div>
+      <Campo rotulo="Raça">
+        <Entrada list="racas" value={f.raca} onChange={set('raca')} placeholder="Ex.: Girolando" />
+        <datalist id="racas">{RACAS.map(r => <option key={r} value={r} />)}</datalist>
+      </Campo>
+      <CampoGrauSangue valor={f.grau_sangue} aoMudar={set('grau_sangue')} />
 
-      <Campo rotulo="Data de nascimento *">
+      <Campo rotulo="Data de nascimento *" ajuda={AJUDA.dataEstimada}>
         <Entrada type="date" max={hojeISO()} value={f.data_nascimento} onChange={set('data_nascimento')} />
         <label className="flex items-center gap-2 mt-2 text-sm text-gray-600">
           <input type="checkbox" className="w-4 h-4 accent-[#56E39F]" checked={f.nascimento_estimado} onChange={set('nascimento_estimado')} /> Data estimada
@@ -134,7 +145,7 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Campo rotulo="Categoria atual *" dica="Como o animal está hoje.">
+        <Campo rotulo="Categoria atual *" dica="Como o animal está hoje." ajuda={AJUDA.categoriaAtual}>
           <Selecao value={cat} onChange={set('categoria')}>
             <option value="">Escolha...</option>
             {CATEGORIAS_POR_SEXO[f.sexo].map(c => <option key={c} value={c}>{CATEGORIAS[c]}</option>)}
@@ -152,7 +163,7 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
 
       {(mostraParto || mostraIA) && (
         <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 space-y-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase">Situação reprodutiva conhecida</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1.5">Situação reprodutiva conhecida <Ajuda item={AJUDA.situacaoConhecida} /></p>
           {mostraParto && (
             <div className="grid grid-cols-2 gap-3">
               <Campo rotulo="Nº de partos"><Entrada inputMode="numeric" value={f.ordem_lactacao} onChange={set('ordem_lactacao')} /></Campo>
@@ -172,12 +183,12 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
           )}
           {mostraIA && (
             <div className="grid grid-cols-2 gap-3">
-              <Campo rotulo={prenhe ? 'Data da IA que pegou' : 'Última IA'}><Entrada type="date" max={hojeISO()} value={f.ultima_ia} onChange={set('ultima_ia')} /></Campo>
+              <Campo rotulo={prenhe ? 'Data da inseminação que pegou' : 'Última inseminação'}><Entrada type="date" max={hojeISO()} value={f.ultima_ia} onChange={set('ultima_ia')} /></Campo>
               <Campo rotulo="Touro / sêmen"><Entrada value={f.touro} onChange={set('touro')} /></Campo>
             </div>
           )}
           {prenhe && !f.ultima_ia && (
-            <Campo rotulo="Dias de gestação" dica="Sem a data da IA, usamos os dias de gestação para prever o parto.">
+            <Campo rotulo="Dias de gestação" dica="Sem a data da inseminação, usamos os dias de gestação para prever o parto.">
               <Entrada inputMode="numeric" value={f.dias_gestacao} onChange={set('dias_gestacao')} />
             </Campo>
           )}
@@ -188,8 +199,8 @@ export const NovoAnimalJanela: React.FC<Props> = ({ aberta, fazendaId, lotes, ao
         <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 space-y-4">
           <p className="text-xs font-semibold text-gray-500 uppercase">Compra</p>
           <div className="grid grid-cols-2 gap-3">
-            <Campo rotulo="Valor (R$)"><Entrada inputMode="decimal" value={f.valor} onChange={set('valor')} /></Campo>
-            <Campo rotulo="GTA"><Entrada value={f.gta} onChange={set('gta')} /></Campo>
+            <Campo rotulo="Valor (R$)" ajuda={AJUDA.valorCompra}><Entrada inputMode="decimal" value={f.valor} onChange={set('valor')} /></Campo>
+            <Campo rotulo="GTA" dica="Guia de Trânsito Animal: documento do transporte."><Entrada value={f.gta} onChange={set('gta')} /></Campo>
           </div>
           <Campo rotulo="Vendedor / origem"><Entrada value={f.vendedor} onChange={set('vendedor')} /></Campo>
           <Campo rotulo="Vencimento do pagamento" dica="Com valor, a compra vai para o financeiro do Gestão como pendente (padrão: a data da compra).">

@@ -1,0 +1,177 @@
+/* Visual do jogo: painéis escuros e translúcidos sobre o mapa. As janelas de lançamento e cadastro são as do sistema (Tailwind). */
+#root { background: #20281c; min-height: 100dvh; }
+html, body { overflow: hidden; overscroll-behavior: none; }
+
+:root {
+  --vidro: rgba(16, 22, 18, .84);
+  --vidro-claro: rgba(255, 255, 255, .07);
+  --linha: rgba(255, 255, 255, .13);
+  --texto: #f1f3ee;
+  --apagado: #aab3a6;
+  --menta: #56d699;
+  --menta-forte: #7be8b4;
+}
+
+.jogo-tela { position: fixed; inset: 0; user-select: none; -webkit-user-select: none; }
+.jogo-tela canvas { display: block; touch-action: none; }
+
+.px, .px button { font-family: 'Nunito', system-ui, sans-serif; font-weight: 600; }
+/* Janelas reais do sistema, dentro do jogo: mantêm a fonte normal */
+.sistema, .sistema button { font-family: 'Inter', sans-serif; user-select: text; -webkit-user-select: text; }
+
+.painel {
+  background: var(--vidro);
+  color: var(--texto);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* ---------- Topo ---------- */
+.hud-esquerda { position: fixed; top: 12px; left: 12px; width: 244px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+.hud-fazenda { padding: 10px 14px; }
+.hud-fazenda h1 { font-size: 15px; font-weight: 800; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-relogio { font-size: 12px; color: var(--apagado); }
+.hud-nivel { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-top: 6px; color: var(--menta-forte); }
+.barra-xp { height: 6px; background: rgba(255, 255, 255, .13); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+.barra-xp > div { height: 100%; background: var(--menta); border-radius: 3px; transition: width .5s; }
+
+.hud-tarefas { position: fixed; top: 12px; right: 12px; width: 286px; z-index: 10; overflow: hidden; }
+.hud-tarefas header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; font-weight: 800; font-size: 14px; width: 100%; }
+.selo-qtd { background: #e5484d; color: #fff; font-weight: 800; font-size: 11px; padding: 1px 7px; border-radius: 9px; margin-left: 7px; }
+.lista-tarefas { max-height: 38vh; overflow-y: auto; border-top: 1px solid var(--linha); touch-action: pan-y; }
+.tarefa { display: flex; width: 100%; gap: 9px; align-items: flex-start; text-align: left; padding: 8px 14px; font-size: 13px; line-height: 1.25; border-bottom: 1px solid rgba(255, 255, 255, .06); }
+.tarefa:hover { background: var(--vidro-claro); }
+.tarefa.ativa { background: rgba(86, 214, 153, .17); }
+.tarefa small { display: block; color: var(--apagado); font-size: 12px; font-weight: 600; }
+.ponto { width: 8px; height: 8px; margin-top: 5px; flex-shrink: 0; border-radius: 50%; }
+.ponto.alta { background: #e5484d; }
+.ponto.media { background: #e8a317; }
+.ponto.baixa { background: #3b8ed0; }
+
+/* ---------- Primeiros passos ---------- */
+.hud-passos { padding: 10px 14px; font-size: 13px; line-height: 1.25; }
+.hud-passos h2 { font-weight: 800; font-size: 13px; margin-bottom: 5px; }
+.hud-passos li { display: flex; gap: 7px; padding: 2px 0; }
+.hud-passos li.feito { color: var(--apagado); text-decoration: line-through; }
+.hud-passos .marca { width: 12px; height: 12px; margin-top: 2px; border: 1.5px solid var(--apagado); border-radius: 3px; flex-shrink: 0; }
+.hud-passos .feito .marca { background: var(--menta); border-color: var(--menta); }
+
+/* ---------- Dica de interação e botões ---------- */
+.hud-dica { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); padding: 8px 16px 8px 9px; z-index: 10; font-size: 15px; font-weight: 700; white-space: nowrap; cursor: pointer; border-radius: 22px; }
+.tecla { background: var(--menta); color: #0c1a14; padding: 1px 8px; border-radius: 7px; font-weight: 800; margin-right: 8px; }
+.hud-ajuda { position: fixed; bottom: 18px; left: 14px; color: #dfe5da; font-size: 12px; text-shadow: 0 1px 3px #000; z-index: 9; line-height: 1.35; }
+.hud-ajuda a { text-decoration: underline; }
+.hud-ajuda a:hover { color: var(--menta); }
+
+.direcional { display: none; position: fixed; left: 16px; bottom: 22px; width: 138px; height: 138px; z-index: 11; }
+.direcional button { position: absolute; width: 46px; height: 46px; background: var(--vidro); border: 1px solid var(--linha); border-radius: 11px; color: var(--texto); font-size: 16px; touch-action: none; }
+.direcional .c { left: 46px; top: 0; }
+.direcional .b { left: 46px; bottom: 0; }
+.direcional .e { left: 0; top: 46px; }
+.direcional .d { right: 0; top: 46px; }
+.botao-acao { display: none; position: fixed; right: 20px; bottom: 44px; width: 74px; height: 74px; border-radius: 50%; background: var(--menta); color: #0c1a14; font-size: 25px; font-weight: 800; z-index: 11; touch-action: none; box-shadow: 0 8px 22px rgba(0, 0, 0, .4); }
+.botao-acao:disabled { background: #54635a; color: #9ca89f; opacity: .75; }
+
+@media (pointer: coarse) {
+  .direcional, .botao-acao { display: block; }
+  .hud-ajuda { display: none; }
+  .hud-dica { bottom: 172px; }
+}
+@media (max-width: 700px) {
+  .hud-esquerda { width: 168px; top: 8px; left: 8px; gap: 6px; }
+  .hud-fazenda { padding: 7px 10px; }
+  .hud-fazenda h1 { font-size: 13px; }
+  .hud-relogio { display: none; }
+  .hud-tarefas { width: 174px; top: 8px; right: 8px; }
+  .hud-tarefas header { font-size: 12px; padding: 9px 10px; }
+  .tarefa { padding: 6px 10px; font-size: 12px; }
+  .hud-passos { padding: 7px 10px; font-size: 12px; }
+  .hud-passos h2, .hud-passos li.feito, .hud-passos li:not(.feito) ~ li { display: none; }
+  /* Em tela estreita a dica de teclas ficava embaixo do botão de interação; a volta ao sistema continua na sede */
+  .hud-ajuda { display: none; }
+}
+
+/* ---------- Cartões ---------- */
+.fundo-cartao { position: fixed; inset: 0; background: rgba(6, 10, 7, .55); z-index: 40; display: flex; align-items: center; justify-content: center; padding: 14px; }
+.cartao { width: 100%; max-width: 480px; max-height: 88dvh; overflow-y: auto; padding: 18px 20px; touch-action: pan-y; user-select: text; -webkit-user-select: text; background: rgba(18, 25, 20, .96); }
+.cartao-largo { max-width: 560px; }
+.cartao-topo { display: flex; gap: 14px; align-items: center; }
+.retrato { width: 96px; height: 78px; background: radial-gradient(circle at 50% 30%, #6b8450, #3e5233); border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.cartao h2 { font-size: 22px; font-weight: 800; line-height: 1.1; }
+.cartao h3 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; color: var(--apagado); text-transform: uppercase; letter-spacing: .05em; }
+.cat { display: inline-block; background: rgba(86, 214, 153, .18); color: var(--menta-forte); padding: 1px 9px; border-radius: 9px; font-size: 12px; font-weight: 700; margin-top: 4px; }
+.dados { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; margin-top: 12px; }
+.dado { background: var(--vidro-claro); border-radius: 8px; padding: 6px 9px; font-size: 13px; font-weight: 700; line-height: 1.25; }
+.dado small { display: block; font-size: 11px; font-weight: 600; color: var(--apagado); }
+.alerta { display: flex; gap: 9px; align-items: flex-start; background: var(--vidro-claro); border-radius: 9px; padding: 8px 11px; margin-bottom: 6px; font-size: 13px; line-height: 1.3; }
+.alerta b { display: block; font-size: 14px; font-weight: 800; }
+.alerta p { color: var(--apagado); font-size: 13px; }
+.alerta .btn { margin-top: 6px; }
+.btn { background: var(--menta); color: #0c1a14; font-weight: 800; padding: 7px 15px; font-size: 14px; border-radius: 9px; transition: background .15s; }
+.btn:hover { background: var(--menta-forte); }
+.btn.sec { background: var(--vidro-claro); color: var(--texto); border: 1px solid var(--linha); }
+.btn.sec:hover { background: rgba(255, 255, 255, .13); }
+.btn.peq { font-size: 13px; padding: 4px 11px; border-radius: 7px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.acoes { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.evento { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 4px 0; border-bottom: 1px solid rgba(255, 255, 255, .07); }
+.evento span:last-child { color: var(--apagado); white-space: nowrap; }
+.hud-relogio, .alerta p, .dado, .evento { font-variant-numeric: tabular-nums; }
+
+/* ---------- Sala de ordenha e plantação ---------- */
+.campo { width: 100%; background: rgba(255, 255, 255, .08); border: 1px solid var(--linha); padding: 7px 10px; font-size: 15px; font-weight: 700; color: var(--texto); border-radius: 8px; color-scheme: dark; }
+.campo::placeholder { color: var(--apagado); font-weight: 600; }
+.campo:focus { outline: none; border-color: var(--menta); }
+.campo:disabled { opacity: .45; }
+.campo.errado { border-color: #e5484d; }
+.ordenha-opcoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; color: var(--apagado); margin-bottom: 8px; }
+.ordenha-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 7px 0; border-top: 1px solid rgba(255, 255, 255, .08); }
+.ordenha-linha.travada { opacity: .55; }
+.ordenha-vaca { flex: 1 1 130px; line-height: 1.2; }
+.ordenha-vaca b { display: block; font-size: 14px; font-weight: 800; }
+.ordenha-vaca small { font-size: 12px; color: var(--apagado); }
+.ordenha-campos { display: flex; gap: 6px; flex: 1 1 190px; }
+.ordenha-campo { min-width: 0; }
+.ordenha-erro { color: #ff8589; font-size: 13px; font-weight: 700; flex-basis: 100%; }
+.ordenha-rodape { position: sticky; bottom: -18px; background: rgba(18, 25, 20, .98); padding: 10px 0; align-items: center; }
+.ordenha-total { margin-right: auto; font-weight: 800; font-size: 15px; }
+.lavoura-item { margin-top: 8px; }
+.lavoura-barra { margin: 6px 0; height: 7px; }
+.lavoura-botoes { display: flex; gap: 6px; justify-content: flex-end; margin-top: 7px; }
+
+/* ---------- Telas de entrada ---------- */
+.tela-escolha { position: fixed; inset: 0; background: #20281c; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.lista-opcao { display: block; width: 100%; text-align: left; padding: 10px 14px; margin-top: 8px; background: var(--vidro-claro); border: 1px solid transparent; border-radius: 9px; font-size: 15px; font-weight: 700; }
+.lista-opcao:hover { border-color: var(--menta); }
+.lista-opcao small { display: block; font-size: 12px; font-weight: 600; color: var(--apagado); }
+.nivel-subiu { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); padding: 14px 28px; text-align: center; z-index: 30; animation: subir .35s ease-out; pointer-events: none; }
+.nivel-subiu b { display: block; font-size: 22px; font-weight: 800; color: var(--menta-forte); }
+@keyframes subir { from { transform: translate(-50%, 18px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+/* ---------- Modo de edição do mapa ---------- */
+.hud-editar { display: block; width: 100%; margin-top: 9px; }
+.editor { position: fixed; top: 12px; right: 12px; width: 300px; max-height: calc(100dvh - 24px); overflow-y: auto; padding: 14px 16px; z-index: 12; touch-action: pan-y; }
+.editor h2 { font-size: 16px; font-weight: 800; }
+.editor-dica { font-size: 12px; color: var(--apagado); line-height: 1.35; margin-top: 3px; }
+.editor-bloco { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--linha); }
+.editor-bloco > b { display: block; font-size: 14px; font-weight: 800; }
+.editor-bloco > small { display: block; font-size: 12px; color: var(--apagado); }
+.editor-bloco > .btn { margin-top: 7px; }
+.editor-campos label { display: block; font-size: 12px; color: var(--apagado); margin-top: 7px; }
+.editor-campos input[type=range] { width: 100%; accent-color: var(--menta); margin-top: 3px; }
+.editor-linha { display: flex; gap: 6px; margin-top: 7px; align-items: center; flex-wrap: wrap; }
+.editor-linha .campo { flex: 1; min-width: 0; padding: 4px 8px; font-size: 13px; }
+.editor-problemas { margin-top: 10px; padding: 8px 10px; background: rgba(229, 72, 77, .17); border-radius: 8px; font-size: 12px; font-weight: 700; color: #ffb3b5; line-height: 1.35; list-style: none; }
+.editor .acoes { margin-top: 12px; }
+@media (max-width: 700px) {
+  .editor { top: auto; bottom: 8px; left: 8px; right: 8px; width: auto; max-height: 44dvh; }
+  .hud-fazenda .hud-editar { margin-top: 6px; }
+}
+/* Aviso e botões sempre à vista, mesmo com o painel rolando */
+.editor .acoes { position: sticky; bottom: -14px; background: rgba(18, 25, 20, .98); margin: 12px -16px -14px; padding: 10px 16px; border-top: 1px solid var(--linha); }
+@media (max-width: 700px) {
+  .editor > .editor-dica { display: none; }
+}

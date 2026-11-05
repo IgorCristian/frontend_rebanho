@@ -3,7 +3,9 @@ import toast from 'react-hot-toast';
 import { api } from '../services/api';
 import { hojeISO } from '../services/formato';
 import { Animal, AnimalResumo, FichaAnimal } from '../types';
+import { AJUDA } from '../services/ajuda';
 import { Botao, Campo, Entrada, Selecao, AreaTexto, Janela } from './ui';
+import { CampoGrauSangue } from './NovoAnimalJanela';
 
 interface Props {
   aberta: boolean;
@@ -56,7 +58,7 @@ export const CorrigirCadastroJanela: React.FC<Props> = ({ aberta, fazendaId, ani
   };
 
   return (
-    <Janela titulo={`Corrigir cadastro – brinco ${animal.brinco}`} aberta={aberta} aoFechar={aoFechar} rodape={
+    <Janela titulo={`Corrigir cadastro – brinco ${animal.brinco}`} ajuda={AJUDA.corrigirCadastro} aberta={aberta} aoFechar={aoFechar} rodape={
       <>
         <Botao variante="secundario" onClick={aoFechar}>Cancelar</Botao>
         <Botao onClick={salvar} carregando={salvando}>Salvar correção</Botao>
@@ -66,10 +68,8 @@ export const CorrigirCadastroJanela: React.FC<Props> = ({ aberta, fazendaId, ani
         <Campo rotulo="Brinco *"><Entrada value={f.brinco} onChange={set('brinco')} /></Campo>
         <Campo rotulo="Nome"><Entrada value={f.nome} onChange={set('nome')} /></Campo>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <Campo rotulo="Raça"><Entrada value={f.raca} onChange={set('raca')} /></Campo>
-        <Campo rotulo="Grau de sangue"><Entrada value={f.grau_sangue} onChange={set('grau_sangue')} /></Campo>
-      </div>
+      <Campo rotulo="Raça"><Entrada value={f.raca} onChange={set('raca')} /></Campo>
+      <CampoGrauSangue valor={f.grau_sangue} aoMudar={set('grau_sangue')} />
       <Campo rotulo="Data de nascimento *">
         <Entrada type="date" max={hojeISO()} value={f.data_nascimento} onChange={set('data_nascimento')} />
         <label className="flex items-center gap-2 mt-2 text-sm text-gray-600">

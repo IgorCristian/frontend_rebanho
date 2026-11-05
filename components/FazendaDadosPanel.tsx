@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Save } from 'lucide-react';
 import { api } from '../services/api';
 import { Fazenda, UFS } from '../types';
-import { Botao, Campo, Entrada, Selecao, Cartao } from './ui';
+import { Botao, Campo, Entrada, Selecao, Cartao, confirmar } from './ui';
 
 interface Props {
   fazenda: Fazenda;
@@ -28,7 +28,7 @@ export const FazendaDadosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoSalv
 
   const salvar = async () => {
     if (!dados.nome.trim()) return toast.error('O nome da fazenda não pode ficar vazio.');
-    if (!dados.ativa && fazenda.ativa && !confirm('Desativar a fazenda? Ninguém da equipe vai conseguir acessá-la.')) return;
+    if (!dados.ativa && fazenda.ativa && !(await confirmar('Desativar a fazenda? Ninguém da equipe vai conseguir acessá-la.'))) return;
     setSalvando(true);
     try {
       const salva = await api.editarFazenda(fazenda.id, dados);

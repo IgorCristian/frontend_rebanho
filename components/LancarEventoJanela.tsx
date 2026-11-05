@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { CATEGORIAS, CATEGORIAS_POR_SEXO, Evento, FichaAnimal, Lote, ManejoSanitario } from '../types';
 import { EVENTOS, GRUPOS_EVENTO, CampoEvento, eventoSeAplica } from '../services/eventos';
 import { hojeISO } from '../services/formato';
+import { AJUDA } from '../services/ajuda';
 import { Botao, Campo, Entrada, Selecao, AreaTexto, Janela } from './ui';
 
 interface Props {
@@ -98,7 +99,7 @@ export const LancarEventoJanela: React.FC<Props> = ({ aberta, fazendaId, ficha, 
   const titulo = config ? `${corrigindo ? 'Corrigir: ' : ''}${config.nome}` : `Lançar para ${ficha.animal.nome || `brinco ${ficha.animal.brinco}`}`;
 
   return (
-    <Janela titulo={titulo} aberta={aberta} aoFechar={aoFechar} rodape={config ? (
+    <Janela titulo={titulo} ajuda={AJUDA.lancarEvento} aberta={aberta} aoFechar={aoFechar} rodape={config ? (
       <>
         {corrigindo
           ? <Botao variante="secundario" onClick={aoFechar}>Cancelar</Botao>
@@ -162,7 +163,7 @@ const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; s
   switch (campo.tipo) {
     case 'numero':
       return (
-        <Campo rotulo={rotulo}>
+        <Campo rotulo={rotulo} dica={campo.dica}>
           <div className="flex items-center border border-gray-200 rounded-lg bg-white focus-within:border-[#56E39F]">
             <input inputMode="decimal" value={valor ?? ''} onChange={e => aoMudar(e.target.value)} className="w-full px-3 py-2.5 bg-transparent rounded-lg focus:outline-none" />
             {campo.unidade && <span className="pr-3 text-sm text-gray-400">{campo.unidade}</span>}
@@ -176,10 +177,10 @@ const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; s
         </Campo>
       );
     case 'texto':
-      return <Campo rotulo={rotulo}><Entrada value={valor ?? ''} onChange={e => aoMudar(e.target.value)} /></Campo>;
+      return <Campo rotulo={rotulo} dica={campo.dica}><Entrada value={valor ?? ''} onChange={e => aoMudar(e.target.value)} /></Campo>;
     case 'opcoes':
       return (
-        <Campo rotulo={rotulo}>
+        <Campo rotulo={rotulo} dica={campo.dica}>
           <Selecao value={valor ?? ''} onChange={e => aoMudar(e.target.value)}>
             <option value="">—</option>{campo.opcoes!.map(o => <option key={o}>{o}</option>)}
           </Selecao>
@@ -188,7 +189,7 @@ const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; s
     case 'simnao': {
       const [sim, nao] = campo.rotulosSimNao || ['Sim', 'Não'];
       return (
-        <Campo rotulo={rotulo}>
+        <Campo rotulo={rotulo} dica={campo.dica}>
           <div className="grid grid-cols-2 gap-2">
             {([[true, sim], [false, nao]] as const).map(([v, r]) => (
               <button key={String(v)} type="button" onClick={() => aoMudar(v)}
@@ -262,7 +263,7 @@ const CampoDinamico: React.FC<{ campo: CampoEvento; valor: any; lotes: Lote[]; s
                   <Entrada placeholder="Peso (kg)" inputMode="decimal" disabled={c.natimorto} value={c.peso_nascer} onChange={e => mudar(i, 'peso_nascer', e.target.value)} />
                 </div>
                 <label className="flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" className="w-4 h-4 accent-[#56E39F]" checked={c.natimorto} onChange={e => mudar(i, 'natimorto', e.target.checked)} /> Natimorto
+                  <input type="checkbox" className="w-4 h-4 accent-[#56E39F]" checked={c.natimorto} onChange={e => mudar(i, 'natimorto', e.target.checked)} /> Natimorto (nasceu morto)
                 </label>
               </div>
             ))}

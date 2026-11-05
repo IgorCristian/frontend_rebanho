@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { Lock, RotateCcw, Save, Sparkles } from 'lucide-react';
 import { api } from '../services/api';
 import { Fazenda, Parametro, RACAS } from '../types';
-import { Botao, Cartao, Selo, Selecao, Carregando } from './ui';
+import { AJUDA, AJUDA_GRUPO_PARAMETRO } from '../services/ajuda';
+import { Ajuda, Botao, Cartao, Selo, Selecao, Carregando, confirmar } from './ui';
 
 interface Props {
   fazenda: Fazenda;
@@ -83,7 +84,7 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
 
   const aplicarRaca = async () => {
     if (!raca) return;
-    if (!confirm(`Aplicar os valores de referência da raça ${raca}? Peso adulto, idade de 1ª cobertura e gestação podem mudar.`)) return;
+    if (!(await confirmar(`Aplicar os valores de referência da raça ${raca}? Peso adulto, idade de 1ª cobertura e gestação podem mudar.`))) return;
     setSalvando(true);
     try {
       receber(await api.aplicarRaca(fazenda.id, raca));
@@ -106,7 +107,7 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
 
       {podeEditar && (
         <Cartao className="p-4">
-          <p className="font-semibold text-gray-900 flex items-center gap-2"><Sparkles size={18} className="text-[#4CD090]" /> Pré-preencher pela raça</p>
+          <p className="font-semibold text-gray-900 flex items-center gap-2"><Sparkles size={18} className="text-[#4CD090]" /> Pré-preencher pela raça <Ajuda item={AJUDA.preencherRaca} /></p>
           <p className="text-sm text-gray-500 mt-0.5 mb-3">
             Usa o meio das faixas de referência da planilha. Raça atual: <strong>{fazenda.raca_predominante || 'não definida'}</strong>.
           </p>
@@ -121,7 +122,10 @@ export const ParametrosPanel: React.FC<Props> = ({ fazenda, podeEditar, aoMudarR
 
       {grupos.map(([grupo, lista]) => (
         <section key={grupo}>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{grupo}</h3>
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1 flex items-center gap-1.5">
+            {grupo}
+            {AJUDA_GRUPO_PARAMETRO[grupo] && <Ajuda item={{ titulo: grupo, texto: AJUDA_GRUPO_PARAMETRO[grupo] }} />}
+          </h3>
           <Cartao className="divide-y divide-gray-100">
             {lista.map(p => {
               const texto = edicoes[p.codigo] ?? paraTela(p, p.valor);
