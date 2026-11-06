@@ -146,7 +146,7 @@ export const Janela: React.FC<{ titulo: string; aberta: boolean; aoFechar: () =>
           <button onClick={aoFechar} className="p-1 text-gray-400 hover:text-gray-700 rounded-full" aria-label="Fechar"><X size={22} /></button>
         </div>
         <div className="p-5 overflow-y-auto space-y-4">{children}</div>
-        {rodape && <div className="px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-2 pb-safe">{rodape}</div>}
+        {rodape && <div className="px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-2 pb-[max(1rem,env(safe-area-inset-bottom))]">{rodape}</div>}
       </div>
     </div>
   );
