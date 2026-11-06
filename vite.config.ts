@@ -13,7 +13,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt', // mostra o aviso de "Nova versão" (ReloadPrompt)
-      includeAssets: ['favicon.ico', 'logo_256.png', 'logo_512.png'],
+      includeAssets: ['favicon.ico', 'logo.svg', 'apple-touch-icon.png', 'logo_192.png', 'logo_512.png'],
       manifest: {
         name: 'AleEdu Rebanho',
         short_name: 'Rebanho',
@@ -23,8 +23,9 @@ export default defineConfig({
         theme_color: '#050D21',
         orientation: 'portrait',
         icons: [
-          { src: '/logo_256.png', sizes: '192x192', type: 'image/png' },
+          { src: '/logo_192.png', sizes: '192x192', type: 'image/png' },
           { src: '/logo_512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/logo_512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
